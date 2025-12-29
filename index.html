@@ -6,6 +6,7 @@
     <title>馬ジャンプゲーム 🐴🗻🦅🍆</title>
     <meta property="og:title" content="🎍謹賀新年🎍 馬ジャンプゲーム">
     <meta property="og:description" content="一富士二鷹三茄子を飛び越えろ！タップでジャンプ！">
+    <meta property="og:image" content="ogp_v2.png">
     <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -40,6 +41,10 @@
         .help-panel h3 { font-size: 13px; margin-bottom: 6px; color: #667eea; }
         .help-panel p { margin: 4px 0; }
         .result-preview { margin: 10px auto; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); max-width: 280px; width: 100%; }
+        .countdown { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 120px; font-weight: bold; color: #c41e3a; text-shadow: 4px 4px 8px rgba(0,0,0,0.3); z-index: 300; animation: countPop 0.5s ease-out; }
+        .countdown.hidden { display: none; }
+        .countdown.go { font-size: 80px; color: #667eea; }
+        @keyframes countPop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
         @media (hover: hover) and (pointer: fine) { .fullscreen-btn { display: flex; align-items: center; gap: 4px; } }
         @media (max-height: 450px) { .overlay { padding: 12px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; } .overlay .emoji { font-size: 28px; margin: 0; } .overlay .newyear { font-size: 18px; margin: 0 10px; } .overlay .wish { font-size: 16px; margin: 5px; } .overlay h1 { font-size: 18px; margin: 0; } .overlay p { font-size: 13px; margin: 0 8px; } .overlay .start-btn { padding: 8px 20px; font-size: 14px; margin: 0; } .overlay .music-btn { padding: 4px 10px; font-size: 10px; margin: 0 5px; } .overlay .instructions { display: none; } .overlay .tip { display: none; } .overlay .share-section { margin: 0; padding: 0; border: none; } .overlay .result-preview { max-width: 180px; margin: 5px; } .score-board { padding: 4px 12px; font-size: 12px; gap: 10px; } }
         @media (max-height: 350px) { .overlay { padding: 8px 15px; } .overlay .emoji { font-size: 24px; } .overlay .newyear { font-size: 16px; } .overlay h1 { font-size: 16px; } .overlay .share-section { display: none; } .overlay .result-preview { display: none; } }
@@ -51,6 +56,8 @@
     <div class="ui-layer">
         <div class="score-board"><span>スコア: <span id="current-score">0</span></span><span>ハイスコア: <span id="high-score" class="high-score">0</span></span></div>
         <button class="fullscreen-btn" onclick="toggleFullscreen()"><span id="fullscreenText">全画面</span></button>
+        
+        <div class="countdown hidden" id="countdown">3</div>
         
         <button class="help-btn" id="helpBtn" onclick="toggleHelp()">❓ 操作方法</button>
         <div class="help-panel hidden" id="helpPanel">
@@ -70,7 +77,7 @@
             <div class="newyear">🎌 謹賀新年 🎌</div>
             <h1>馬ジャンプゲーム</h1>
             <p>一富士二鷹三茄子を飛び越えろ！</p>
-            <button class="start-btn" onclick="startGame()">🎮 ゲームスタート</button>
+            <button class="start-btn" onclick="startCountdown()">🎮 ゲームスタート</button>
             <button class="music-btn" id="musicBtn" onclick="toggleMusic()">🔇 音楽OFF</button>
             <div class="instructions"><strong>操作:</strong> タップ/スペース でジャンプ<br><strong>連続タップで多段ジャンプ！（最大3段）</strong><br><div class="score-info"><span>🍆茄子 +1</span><span>🗻富士 +3</span><span>🦅鷹 +5</span></div></div>
             <div class="tip">📱 スマホは<strong>横画面</strong>でのプレイがおすすめ！</div>
@@ -82,7 +89,7 @@
             <p>ハイスコア: <span id="final-high-score">0</span></p>
             <p id="obstacle-stats" style="font-size:12px;"></p>
             <img id="resultPreview" class="result-preview" src="" alt="結果画像">
-            <button class="start-btn" onclick="startGame()">🔄 もう一度</button>
+            <button class="start-btn" onclick="startCountdown()">🔄 もう一度</button>
             <div class="share-section">
                 <button class="share-btn" id="lineShareBtn" onclick="shareToLine()">
                     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
@@ -205,6 +212,88 @@
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
             osc.start(audioCtx.currentTime);
             osc.stop(audioCtx.currentTime + 0.15);
+        }
+        
+        function playCountdownSound(num) {
+            if (!audioCtx) initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            if (num === 'go') {
+                // "GO!" sound - higher pitched chord
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.2);
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
+                osc.type = 'square';
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.5);
+                
+                // Add a second oscillator for richer sound
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2);
+                gain2.connect(audioCtx.destination);
+                osc2.frequency.setValueAtTime(1320, audioCtx.currentTime);
+                osc2.type = 'sine';
+                gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
+                osc2.start(audioCtx.currentTime);
+                osc2.stop(audioCtx.currentTime + 0.4);
+            } else {
+                // Countdown beep - lower for higher numbers
+                const freq = 440 + (4 - num) * 110;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start(audioCtx.currentTime);
+                osc.stop(audioCtx.currentTime + 0.3);
+            }
+        }
+        
+        function startCountdown() {
+            initAudio();
+            stopMusic();
+            
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            document.getElementById('helpPanel').classList.add('hidden');
+            
+            const countdownEl = document.getElementById('countdown');
+            countdownEl.classList.remove('hidden', 'go');
+            
+            setupDimensions();
+            draw();
+            
+            let count = 3;
+            countdownEl.textContent = count;
+            playCountdownSound(count);
+            
+            const countInterval = setInterval(() => {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                    countdownEl.style.animation = 'none';
+                    countdownEl.offsetHeight; // Trigger reflow
+                    countdownEl.style.animation = 'countPop 0.5s ease-out';
+                    playCountdownSound(count);
+                } else if (count === 0) {
+                    countdownEl.textContent = 'GO!';
+                    countdownEl.classList.add('go');
+                    countdownEl.style.animation = 'none';
+                    countdownEl.offsetHeight;
+                    countdownEl.style.animation = 'countPop 0.5s ease-out';
+                    playCountdownSound('go');
+                } else {
+                    clearInterval(countInterval);
+                    countdownEl.classList.add('hidden');
+                    startGame();
+                }
+            }, 800);
         }
         
         function toggleHelp() {
@@ -389,12 +478,8 @@
         }
         
         function startGame() { 
-            initAudio(); stopMusic();
-            setupDimensions(); gameRunning = true; score = 0; frameCount = 0; fujiCount = 0; hawkCount = 0; eggplantCount = 0; gameSpeed = baseSpeed; obstacles = []; 
+            gameRunning = true; score = 0; frameCount = 0; fujiCount = 0; hawkCount = 0; eggplantCount = 0; gameSpeed = baseSpeed; obstacles = []; 
             horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.jumpCount = 0; 
-            document.getElementById('startOverlay').classList.add('hidden'); 
-            document.getElementById('gameOverOverlay').classList.add('hidden');
-            document.getElementById('helpPanel').classList.add('hidden');
             gameLoop(); 
         }
         
