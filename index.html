@@ -2,17 +2,15 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>馬ジャンプゲーム 🐴🗻</title>
     
     <!-- OGP tags for LINE/SNS sharing -->
     <meta property="og:title" content="馬ジャンプゲーム 🐴🗻">
     <meta property="og:description" content="富士山を飛び越えて走り続けろ！スペース/タップでジャンプ！">
     <meta property="og:type" content="website">
-    <!-- ↓ホスティング後、実際のURLに変更してください（例: https://username.github.io/horse-jump-game/） -->
-    <meta property="og:url" content="https://watayu622.github.io/horse-jump-game/">
-    <!-- ↓OGP画像のURL -->
-    <meta property="og:image" content="https://watayu622.github.io/horse-jump-game/ogp.png">
+    <meta property="og:url" content="https://YOUR_USERNAME.github.io/horse-jump-game/">
+    <meta property="og:image" content="https://YOUR_USERNAME.github.io/horse-jump-game/ogp.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
@@ -21,6 +19,10 @@
     <meta name="twitter:title" content="馬ジャンプゲーム 🐴🗻">
     <meta name="twitter:description" content="富士山を飛び越えて走り続けろ！">
     
+    <!-- Fullscreen support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
     <style>
         * {
             margin: 0;
@@ -28,43 +30,52 @@
             box-sizing: border-box;
         }
 
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        html, body {
+            width: 100%;
+            height: 100%;
             overflow: hidden;
+            background: #1a1a2e;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
         }
 
-        .game-container {
-            position: relative;
-            width: 800px;
-            max-width: 95vw;
+        #gameCanvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
         }
 
         .score-board {
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
-            justify-content: space-between;
-            padding: 10px 20px;
-            background: rgba(255, 255, 255, 0.8);
-            border-radius: 10px 10px 0 0;
-            font-size: 18px;
+            gap: 30px;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 25px;
+            font-size: clamp(14px, 3vw, 20px);
             font-weight: bold;
             color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            z-index: 100;
         }
 
-        canvas {
-            display: block;
-            background: linear-gradient(to bottom, 
-                #87CEEB 0%, 
-                #B0E0E6 60%, 
-                #90EE90 60%, 
-                #228B22 100%
-            );
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        .high-score {
+            color: #e74c3c;
         }
 
         .overlay {
@@ -74,10 +85,14 @@
             transform: translate(-50%, -50%);
             text-align: center;
             background: rgba(255, 255, 255, 0.95);
-            padding: 40px;
+            padding: clamp(20px, 5vw, 40px);
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 10;
+            z-index: 200;
+            pointer-events: auto;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .overlay.hidden {
@@ -85,25 +100,25 @@
         }
 
         .overlay h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
+            font-size: clamp(24px, 5vw, 36px);
+            margin-bottom: 15px;
             color: #333;
         }
 
         .overlay p {
-            font-size: 18px;
-            margin-bottom: 15px;
+            font-size: clamp(14px, 3vw, 18px);
+            margin-bottom: 12px;
             color: #666;
         }
 
         .overlay .emoji {
-            font-size: 60px;
-            margin-bottom: 20px;
+            font-size: clamp(40px, 10vw, 70px);
+            margin-bottom: 15px;
         }
 
         .start-btn {
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: clamp(12px, 3vw, 18px) clamp(30px, 8vw, 50px);
+            font-size: clamp(16px, 4vw, 22px);
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -111,6 +126,7 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             margin-top: 10px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .start-btn:hover {
@@ -118,17 +134,17 @@
             box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
         }
 
-        .instructions {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            font-size: 14px;
-            color: #555;
+        .start-btn:active {
+            transform: scale(0.98);
         }
 
-        .high-score {
-            color: #e74c3c;
+        .instructions {
+            margin-top: 15px;
+            padding: 12px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: clamp(12px, 2.5vw, 14px);
+            color: #555;
         }
 
         .share-section {
@@ -142,7 +158,7 @@
             align-items: center;
             gap: 8px;
             padding: 10px 20px;
-            font-size: 14px;
+            font-size: clamp(12px, 2.5vw, 14px);
             background: #06C755;
             color: white;
             border: none;
@@ -150,6 +166,7 @@
             cursor: pointer;
             transition: transform 0.2s, background 0.2s;
             text-decoration: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .share-btn:hover {
@@ -162,27 +179,146 @@
             height: 20px;
         }
 
-        @media (max-width: 600px) {
+        /* Fullscreen button */
+        .fullscreen-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            padding: 10px 15px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: clamp(12px, 2.5vw, 14px);
+            z-index: 100;
+            pointer-events: auto;
+            -webkit-tap-highlight-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .fullscreen-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .fullscreen-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Landscape prompt for mobile */
+        .rotate-prompt {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            z-index: 9999;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .rotate-prompt .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+            animation: rotate-hint 2s ease-in-out infinite;
+        }
+
+        @keyframes rotate-hint {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(90deg); }
+        }
+
+        .rotate-prompt p {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .rotate-prompt .skip-btn {
+            margin-top: 20px;
+            padding: 10px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid white;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        /* Show rotate prompt on small portrait screens */
+        @media (max-width: 600px) and (orientation: portrait) {
+            .rotate-prompt.active {
+                display: flex;
+            }
+        }
+
+        /* Mobile landscape adjustments */
+        @media (max-height: 500px) {
+            .score-board {
+                top: 8px;
+                padding: 6px 15px;
+                font-size: 14px;
+            }
+            
             .overlay {
-                padding: 25px;
-                width: 90%;
+                padding: 15px 25px;
             }
-            .overlay h1 {
-                font-size: 22px;
-            }
+            
             .overlay .emoji {
-                font-size: 45px;
+                font-size: 35px;
+                margin-bottom: 8px;
+            }
+            
+            .overlay h1 {
+                font-size: 20px;
+                margin-bottom: 8px;
+            }
+            
+            .overlay p {
+                font-size: 13px;
+                margin-bottom: 8px;
+            }
+            
+            .start-btn {
+                padding: 10px 30px;
+                font-size: 16px;
+            }
+            
+            .instructions {
+                display: none;
+            }
+
+            .fullscreen-btn {
+                top: 8px;
+                right: 8px;
+                padding: 6px 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="ui-layer">
         <div class="score-board">
             <span>スコア: <span id="current-score">0</span></span>
             <span>ハイスコア: <span id="high-score" class="high-score">0</span></span>
         </div>
-        <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+        <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+            <span id="fullscreenText">全画面</span>
+        </button>
         
         <div class="overlay" id="startOverlay">
             <div class="emoji">🐴🗻</div>
@@ -213,9 +349,26 @@
         </div>
     </div>
 
+    <!-- Rotate prompt for mobile portrait -->
+    <div class="rotate-prompt" id="rotatePrompt">
+        <div class="icon">📱</div>
+        <p>横向きにすると<br>もっと遊びやすい！</p>
+        <button class="skip-btn" onclick="dismissRotatePrompt()">このまま遊ぶ</button>
+    </div>
+
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Game dimensions (will scale)
+        const GAME_WIDTH = 1200;
+        const GAME_HEIGHT = 600;
+        let scale = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+
+        // Ground Y position
+        const GROUND_Y = 500;
 
         // Game state
         let gameRunning = false;
@@ -229,15 +382,15 @@
 
         // Horse
         const horse = {
-            x: 80,
-            y: 280,
-            width: 80,
-            height: 60,
+            x: 100,
+            y: 420,
+            width: 100,
+            height: 75,
             velocityY: 0,
             gravity: 0.8,
-            jumpForce: -15,
+            jumpForce: -16,
             isJumping: false,
-            groundY: 280,
+            groundY: 420,
             legPhase: 0
         };
 
@@ -246,86 +399,108 @@
 
         // Clouds
         let clouds = [
-            { x: 100, y: 50, size: 40 },
-            { x: 300, y: 80, size: 30 },
-            { x: 550, y: 40, size: 50 },
-            { x: 700, y: 70, size: 35 }
+            { x: 150, y: 80, size: 50 },
+            { x: 450, y: 120, size: 40 },
+            { x: 800, y: 60, size: 60 },
+            { x: 1050, y: 100, size: 45 }
         ];
+
+        // Resize canvas to fit window
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            
+            // Calculate scale to fit game area (fill screen)
+            const scaleX = canvas.width / GAME_WIDTH;
+            const scaleY = canvas.height / GAME_HEIGHT;
+            scale = Math.max(scaleX, scaleY); // Use max to fill screen
+            
+            // Center the game
+            offsetX = (canvas.width - GAME_WIDTH * scale) / 2;
+            offsetY = (canvas.height - GAME_HEIGHT * scale) / 2;
+
+            // Update ground position based on scale
+            horse.groundY = GROUND_Y - 80;
+            if (horse.y > horse.groundY) {
+                horse.y = horse.groundY;
+            }
+        }
 
         // Draw horse
         function drawHorse() {
             const x = horse.x;
             const y = horse.y;
+            const s = 1.2; // Horse scale
             
             ctx.save();
             
             // Body
             ctx.fillStyle = '#8B4513';
             ctx.beginPath();
-            ctx.ellipse(x + 40, y + 25, 35, 20, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 50*s, y + 30*s, 42*s, 25*s, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // Head
             ctx.beginPath();
-            ctx.ellipse(x + 75, y + 5, 18, 12, -0.3, 0, Math.PI * 2);
+            ctx.ellipse(x + 95*s, y + 5*s, 22*s, 15*s, -0.3, 0, Math.PI * 2);
             ctx.fill();
             
             // Neck
             ctx.beginPath();
-            ctx.moveTo(x + 60, y + 10);
-            ctx.quadraticCurveTo(x + 70, y + 20, x + 65, y + 30);
-            ctx.lineTo(x + 55, y + 25);
-            ctx.quadraticCurveTo(x + 55, y + 15, x + 60, y + 10);
+            ctx.moveTo(x + 75*s, y + 12*s);
+            ctx.quadraticCurveTo(x + 87*s, y + 25*s, x + 80*s, y + 38*s);
+            ctx.lineTo(x + 68*s, y + 32*s);
+            ctx.quadraticCurveTo(x + 68*s, y + 18*s, x + 75*s, y + 12*s);
             ctx.fill();
             
             // Ear
             ctx.beginPath();
-            ctx.moveTo(x + 80, y - 5);
-            ctx.lineTo(x + 85, y - 15);
-            ctx.lineTo(x + 90, y - 3);
+            ctx.moveTo(x + 100*s, y - 8*s);
+            ctx.lineTo(x + 106*s, y - 20*s);
+            ctx.lineTo(x + 113*s, y - 5*s);
             ctx.fill();
             
             // Eye
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(x + 82, y + 3, 3, 0, Math.PI * 2);
+            ctx.arc(x + 103*s, y + 3*s, 4*s, 0, Math.PI * 2);
             ctx.fill();
             
             // Mane
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
-            ctx.moveTo(x + 55, y);
-            ctx.quadraticCurveTo(x + 45, y - 10, x + 50, y + 5);
-            ctx.quadraticCurveTo(x + 40, y - 5, x + 45, y + 10);
-            ctx.quadraticCurveTo(x + 35, y, x + 40, y + 15);
-            ctx.lineTo(x + 55, y + 15);
+            ctx.moveTo(x + 68*s, y);
+            ctx.quadraticCurveTo(x + 55*s, y - 12*s, x + 62*s, y + 6*s);
+            ctx.quadraticCurveTo(x + 48*s, y - 5*s, x + 55*s, y + 12*s);
+            ctx.quadraticCurveTo(x + 42*s, y + 2*s, x + 50*s, y + 18*s);
+            ctx.lineTo(x + 68*s, y + 18*s);
             ctx.fill();
             
             // Legs with animation
             ctx.fillStyle = '#8B4513';
-            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8;
+            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 10;
             
             // Front legs
-            ctx.fillRect(x + 55, y + 35, 8, 25 + legOffset);
-            ctx.fillRect(x + 65, y + 35, 8, 25 - legOffset);
+            ctx.fillRect(x + 68*s, y + 45*s, 10*s, 32*s + legOffset);
+            ctx.fillRect(x + 82*s, y + 45*s, 10*s, 32*s - legOffset);
             
             // Back legs
-            ctx.fillRect(x + 15, y + 35, 8, 25 - legOffset);
-            ctx.fillRect(x + 25, y + 35, 8, 25 + legOffset);
+            ctx.fillRect(x + 18*s, y + 45*s, 10*s, 32*s - legOffset);
+            ctx.fillRect(x + 32*s, y + 45*s, 10*s, 32*s + legOffset);
             
             // Hooves
             ctx.fillStyle = '#2d1b0e';
-            ctx.fillRect(x + 54, y + 58 + legOffset, 10, 5);
-            ctx.fillRect(x + 64, y + 58 - legOffset, 10, 5);
-            ctx.fillRect(x + 14, y + 58 - legOffset, 10, 5);
-            ctx.fillRect(x + 24, y + 58 + legOffset, 10, 5);
+            ctx.fillRect(x + 66*s, y + 75*s + legOffset, 14*s, 6*s);
+            ctx.fillRect(x + 80*s, y + 75*s - legOffset, 14*s, 6*s);
+            ctx.fillRect(x + 16*s, y + 75*s - legOffset, 14*s, 6*s);
+            ctx.fillRect(x + 30*s, y + 75*s + legOffset, 14*s, 6*s);
             
             // Tail
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
-            ctx.moveTo(x + 5, y + 20);
-            ctx.quadraticCurveTo(x - 15, y + 35, x - 10, y + 50);
-            ctx.quadraticCurveTo(x - 5, y + 45, x + 5, y + 35);
+            ctx.moveTo(x + 5*s, y + 25*s);
+            ctx.quadraticCurveTo(x - 20*s, y + 45*s, x - 12*s, y + 65*s);
+            ctx.quadraticCurveTo(x - 5*s, y + 58*s, x + 5*s, y + 45*s);
             ctx.fill();
             
             ctx.restore();
@@ -334,13 +509,13 @@
         // Draw Mt. Fuji obstacle
         function drawFuji(obstacle) {
             const x = obstacle.x;
-            const baseY = 340;
+            const baseY = GROUND_Y;
             const height = obstacle.height;
             const width = obstacle.width;
             
             ctx.save();
             
-            // Mountain body (blue-ish gray)
+            // Mountain body
             ctx.fillStyle = '#4a5568';
             ctx.beginPath();
             ctx.moveTo(x, baseY);
@@ -357,16 +532,15 @@
             ctx.moveTo(x + width / 2 - snowWidth / 2, baseY - height + snowHeight);
             ctx.lineTo(x + width / 2, baseY - height);
             ctx.lineTo(x + width / 2 + snowWidth / 2, baseY - height + snowHeight);
-            // Jagged snow line
-            ctx.lineTo(x + width / 2 + snowWidth / 3, baseY - height + snowHeight + 5);
+            ctx.lineTo(x + width / 2 + snowWidth / 3, baseY - height + snowHeight + 6);
             ctx.lineTo(x + width / 2 + snowWidth / 6, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2, baseY - height + snowHeight + 8);
+            ctx.lineTo(x + width / 2, baseY - height + snowHeight + 10);
             ctx.lineTo(x + width / 2 - snowWidth / 6, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2 - snowWidth / 3, baseY - height + snowHeight + 5);
+            ctx.lineTo(x + width / 2 - snowWidth / 3, baseY - height + snowHeight + 6);
             ctx.closePath();
             ctx.fill();
             
-            // Add some shading
+            // Shading
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.beginPath();
             ctx.moveTo(x + width / 2, baseY - height);
@@ -394,27 +568,27 @@
         function drawGround() {
             // Grass
             ctx.fillStyle = '#228B22';
-            ctx.fillRect(0, 340, canvas.width, 60);
+            ctx.fillRect(-100, GROUND_Y, GAME_WIDTH + 200, GAME_HEIGHT - GROUND_Y + 100);
             
             // Ground line
             ctx.strokeStyle = '#1a6b1a';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 4;
             ctx.beginPath();
-            ctx.moveTo(0, 340);
-            ctx.lineTo(canvas.width, 340);
+            ctx.moveTo(-100, GROUND_Y);
+            ctx.lineTo(GAME_WIDTH + 100, GROUND_Y);
             ctx.stroke();
             
-            // Some grass details
+            // Grass details
             ctx.strokeStyle = '#2d8f2d';
             ctx.lineWidth = 2;
-            for (let i = 0; i < canvas.width; i += 30) {
+            for (let i = -100; i < GAME_WIDTH + 100; i += 40) {
                 ctx.beginPath();
-                ctx.moveTo(i, 340);
-                ctx.lineTo(i + 5, 330);
+                ctx.moveTo(i, GROUND_Y);
+                ctx.lineTo(i + 6, GROUND_Y - 12);
                 ctx.stroke();
                 ctx.beginPath();
-                ctx.moveTo(i + 15, 340);
-                ctx.lineTo(i + 12, 333);
+                ctx.moveTo(i + 20, GROUND_Y);
+                ctx.lineTo(i + 15, GROUND_Y - 8);
                 ctx.stroke();
             }
         }
@@ -424,24 +598,23 @@
             ctx.save();
             ctx.globalAlpha = 0.3;
             
-            // Large background Fuji
             ctx.fillStyle = '#6b7280';
             ctx.beginPath();
-            ctx.moveTo(400, 340);
-            ctx.lineTo(550, 100);
-            ctx.lineTo(700, 340);
+            ctx.moveTo(600, GROUND_Y);
+            ctx.lineTo(800, 80);
+            ctx.lineTo(1000, GROUND_Y);
             ctx.closePath();
             ctx.fill();
             
             // Snow cap
             ctx.fillStyle = '#FFFFFF';
             ctx.beginPath();
-            ctx.moveTo(510, 160);
-            ctx.lineTo(550, 100);
-            ctx.lineTo(590, 160);
-            ctx.lineTo(570, 165);
-            ctx.lineTo(550, 155);
-            ctx.lineTo(530, 165);
+            ctx.moveTo(745, 170);
+            ctx.lineTo(800, 80);
+            ctx.lineTo(855, 170);
+            ctx.lineTo(830, 178);
+            ctx.lineTo(800, 165);
+            ctx.lineTo(770, 178);
             ctx.closePath();
             ctx.fill();
             
@@ -476,12 +649,12 @@
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
             
             // Spawn new obstacles
-            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 300 - Math.random() * 200) {
-                const size = 0.7 + Math.random() * 0.5;
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < GAME_WIDTH - 350 - Math.random() * 250) {
+                const size = 0.8 + Math.random() * 0.5;
                 obstacles.push({
-                    x: canvas.width + 50,
-                    width: 80 * size,
-                    height: 70 * size
+                    x: GAME_WIDTH + 50,
+                    width: 100 * size,
+                    height: 90 * size
                 });
             }
             
@@ -489,24 +662,22 @@
             clouds.forEach(cloud => {
                 cloud.x -= gameSpeed * 0.3;
                 if (cloud.x + cloud.size * 2 < 0) {
-                    cloud.x = canvas.width + cloud.size;
+                    cloud.x = GAME_WIDTH + cloud.size;
                 }
             });
             
             // Check collision
             obstacles.forEach(obs => {
-                // Hitbox for horse (smaller than visual)
                 const horseHitbox = {
-                    x: horse.x + 15,
-                    y: horse.y + 10,
-                    width: 55,
-                    height: 45
+                    x: horse.x + 20,
+                    y: horse.y + 15,
+                    width: 70,
+                    height: 55
                 };
                 
-                // Simple box collision for main body
-                if (horseHitbox.x < obs.x + obs.width - 15 &&
-                    horseHitbox.x + horseHitbox.width > obs.x + 15 &&
-                    horseHitbox.y + horseHitbox.height > 340 - obs.height + 20) {
+                if (horseHitbox.x < obs.x + obs.width - 20 &&
+                    horseHitbox.x + horseHitbox.width > obs.x + 20 &&
+                    horseHitbox.y + horseHitbox.height > GROUND_Y - obs.height + 25) {
                     gameOver();
                 }
             });
@@ -516,7 +687,7 @@
             document.getElementById('current-score').textContent = Math.floor(score / 10);
             
             // Increase speed gradually
-            if (score % 500 === 0 && gameSpeed < 15) {
+            if (score % 500 === 0 && gameSpeed < 18) {
                 gameSpeed += 0.5;
             }
         }
@@ -526,14 +697,23 @@
             // Clear canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Draw background
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            // Fill background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Apply transformation for game area
+            ctx.save();
+            ctx.translate(offsetX, offsetY);
+            ctx.scale(scale, scale);
+            
+            // Draw sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
             gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.6, '#B0E0E6');
-            gradient.addColorStop(0.6, '#90EE90');
+            gradient.addColorStop(0.7, '#B0E0E6');
+            gradient.addColorStop(0.7, '#90EE90');
             gradient.addColorStop(1, '#228B22');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(-100, -100, GAME_WIDTH + 200, GAME_HEIGHT + 200);
             
             // Draw elements
             drawBackgroundFuji();
@@ -545,6 +725,8 @@
             
             // Draw horse
             drawHorse();
+            
+            ctx.restore();
         }
 
         // Game loop
@@ -597,11 +779,10 @@
             document.getElementById('final-high-score').textContent = highScore;
             document.getElementById('gameOverOverlay').classList.remove('hidden');
             
-            // Update LINE share button
             updateShareButton(finalScore);
         }
 
-        // Update LINE share button with score
+        // Update LINE share button
         function updateShareButton(finalScore) {
             const gameUrl = window.location.href;
             const shareText = `🐴馬ジャンプゲーム🗻\nスコア: ${finalScore}点！\n富士山を飛び越えろ！\n`;
@@ -609,13 +790,76 @@
             document.getElementById('lineShareBtn').href = lineShareUrl;
         }
 
+        // Fullscreen
+        function toggleFullscreen() {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen();
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
+            }
+        }
+
+        // Update fullscreen button text
+        function updateFullscreenButton() {
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+            document.getElementById('fullscreenText').textContent = isFullscreen ? '縮小' : '全画面';
+        }
+
+        // Rotate prompt
+        let rotatePromptDismissed = false;
+        
+        function checkOrientation() {
+            if (rotatePromptDismissed) return;
+            
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const prompt = document.getElementById('rotatePrompt');
+            
+            if (isMobile && isPortrait && window.innerWidth < 600) {
+                prompt.classList.add('active');
+            } else {
+                prompt.classList.remove('active');
+            }
+        }
+
+        function dismissRotatePrompt() {
+            rotatePromptDismissed = true;
+            document.getElementById('rotatePrompt').classList.remove('active');
+        }
+
         // Event listeners
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            checkOrientation();
+            if (!gameRunning) draw();
+        });
+
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                resizeCanvas();
+                checkOrientation();
+                if (!gameRunning) draw();
+            }, 100);
+        });
+
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
+
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
                 if (gameRunning) {
                     jump();
-                } else {
+                } else if (!document.getElementById('startOverlay').classList.contains('hidden') ||
+                           !document.getElementById('gameOverOverlay').classList.contains('hidden')) {
                     startGame();
                 }
             }
@@ -632,9 +876,21 @@
             if (gameRunning) {
                 jump();
             }
-        });
+        }, { passive: false });
 
-        // Initial draw
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', (e) => {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, { passive: false });
+
+        // Initialize
+        resizeCanvas();
+        checkOrientation();
         draw();
     </script>
 </body>
