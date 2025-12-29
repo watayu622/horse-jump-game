@@ -4,965 +4,181 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>馬ジャンプゲーム 🐴🗻🦅🍆</title>
-    
-    <!-- OGP tags for LINE/SNS sharing -->
     <meta property="og:title" content="馬ジャンプゲーム 🐴🗻🦅🍆">
     <meta property="og:description" content="一富士二鷹三茄子を飛び越えろ！タップでジャンプ！">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://watayu622.github.io/horse-jump-game/">
-    <meta property="og:image" content="https://watayu622.github.io/horse-jump-game/ogp.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    
-    <!-- PWA support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#87CEEB">
-    
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #87CEEB;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            touch-action: manipulation;
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            user-select: none;
-        }
-
-        #gameCanvas {
-            display: block;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-
-        .ui-layer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .score-board {
-            position: absolute;
-            top: max(10px, env(safe-area-inset-top));
-            left: 50%;
-            transform: translateX(-50%);
-            display: flex;
-            gap: 20px;
-            padding: 8px 20px;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 25px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            white-space: nowrap;
-        }
-
-        .high-score {
-            color: #e74c3c;
-        }
-
-        .overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 25px;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
-            z-index: 200;
-            pointer-events: auto;
-            max-width: 90%;
-            width: 320px;
-        }
-
-        .overlay.hidden {
-            display: none;
-        }
-
-        .overlay h1 {
-            font-size: 22px;
-            margin-bottom: 10px;
-            color: #333;
-        }
-
-        .overlay p {
-            font-size: 15px;
-            margin-bottom: 8px;
-            color: #666;
-        }
-
-        .overlay .emoji {
-            font-size: 40px;
-            margin-bottom: 10px;
-        }
-
-        .start-btn {
-            padding: 12px 35px;
-            font-size: 17px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            margin-top: 8px;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .start-btn:hover {
-            transform: scale(1.05);
-        }
-
-        .start-btn:active {
-            transform: scale(0.98);
-        }
-
-        .instructions {
-            margin-top: 12px;
-            padding: 10px;
-            background: #f0f0f0;
-            border-radius: 10px;
-            font-size: 12px;
-            color: #555;
-            text-align: left;
-        }
-
-        .instructions .score-info {
-            margin-top: 8px;
-            font-size: 11px;
-        }
-
-        .instructions .score-info span {
-            display: inline-block;
-            margin-right: 10px;
-        }
-
-        .share-section {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #ddd;
-        }
-
-        .share-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 20px;
-            font-size: 14px;
-            background: #06C755;
-            color: white;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            text-decoration: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        .share-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* PC only fullscreen button */
-        .fullscreen-btn {
-            position: absolute;
-            top: max(10px, env(safe-area-inset-top));
-            right: max(10px, env(safe-area-inset-right));
-            padding: 8px 12px;
-            background: rgba(0, 0, 0, 0.6);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 13px;
-            z-index: 100;
-            pointer-events: auto;
-            -webkit-tap-highlight-color: transparent;
-            display: none;
-        }
-
-        .fullscreen-btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        /* Show only on non-touch devices (PC) */
-        @media (hover: hover) and (pointer: fine) {
-            .fullscreen-btn {
-                display: flex;
-                align-items: center;
-                gap: 5px;
-            }
-        }
-
-        @media (max-height: 400px) {
-            .score-board {
-                padding: 5px 12px;
-                font-size: 13px;
-            }
-            .overlay {
-                padding: 15px;
-                width: 280px;
-            }
-            .overlay .emoji {
-                font-size: 28px;
-            }
-            .overlay h1 {
-                font-size: 18px;
-            }
-            .instructions {
-                display: none;
-            }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #87CEEB; font-family: 'Segoe UI', sans-serif; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+        #gameCanvas { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; }
+        .ui-layer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; }
+        .score-board { position: absolute; top: max(8px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); display: flex; gap: 15px; padding: 6px 16px; background: rgba(255,255,255,0.9); border-radius: 20px; font-size: 14px; font-weight: bold; color: #333; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .high-score { color: #e74c3c; }
+        .overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; background: rgba(255,255,255,0.95); padding: 20px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 200; pointer-events: auto; max-width: 95%; max-height: 90%; overflow-y: auto; }
+        .overlay.hidden { display: none; }
+        .overlay h1 { font-size: 20px; margin-bottom: 8px; color: #333; }
+        .overlay p { font-size: 14px; margin-bottom: 6px; color: #666; }
+        .overlay .emoji { font-size: 36px; margin-bottom: 8px; }
+        .start-btn { padding: 10px 30px; font-size: 16px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 25px; cursor: pointer; margin-top: 6px; }
+        .instructions { margin-top: 10px; padding: 8px; background: #f0f0f0; border-radius: 10px; font-size: 11px; color: #555; text-align: left; }
+        .instructions .score-info { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .share-section { margin-top: 10px; padding-top: 10px; border-top: 1px solid #ddd; }
+        .share-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; background: #06C755; color: white; border: none; border-radius: 18px; text-decoration: none; }
+        .share-btn svg { width: 18px; height: 18px; }
+        .fullscreen-btn { position: absolute; top: max(8px, env(safe-area-inset-top)); right: max(8px, env(safe-area-inset-right)); padding: 6px 10px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 8px; font-size: 12px; z-index: 100; pointer-events: auto; display: none; }
+        @media (hover: hover) and (pointer: fine) { .fullscreen-btn { display: flex; align-items: center; gap: 4px; } }
+        @media (max-height: 450px) { .overlay { padding: 12px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; } .overlay .emoji { font-size: 28px; margin: 0; } .overlay h1 { font-size: 18px; margin: 0; } .overlay p { font-size: 13px; margin: 0 8px; } .overlay .start-btn { padding: 8px 20px; font-size: 14px; margin: 0; } .overlay .instructions { display: none; } .overlay .share-section { margin: 0; padding: 0; border: none; } .score-board { padding: 4px 12px; font-size: 12px; gap: 10px; } }
+        @media (max-height: 350px) { .overlay { padding: 8px 15px; } .overlay .emoji { font-size: 24px; } .overlay h1 { font-size: 16px; } .overlay .share-section { display: none; } }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-    
     <div class="ui-layer">
-        <div class="score-board">
-            <span>スコア: <span id="current-score">0</span></span>
-            <span>ハイスコア: <span id="high-score" class="high-score">0</span></span>
-        </div>
-
-        <button class="fullscreen-btn" id="fullscreenBtn" onclick="toggleFullscreen()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-            </svg>
-            <span id="fullscreenText">全画面</span>
-        </button>
-        
+        <div class="score-board"><span>スコア: <span id="current-score">0</span></span><span>ハイスコア: <span id="high-score" class="high-score">0</span></span></div>
+        <button class="fullscreen-btn" onclick="toggleFullscreen()"><span id="fullscreenText">全画面</span></button>
         <div class="overlay" id="startOverlay">
             <div class="emoji">🐴🗻🦅🍆</div>
             <h1>馬ジャンプゲーム</h1>
             <p>一富士二鷹三茄子を飛び越えろ！</p>
             <button class="start-btn" onclick="startGame()">ゲームスタート</button>
-            <div class="instructions">
-                <strong>操作:</strong> スペース / クリック / タップ でジャンプ<br>
-                <div class="score-info">
-                    <strong>得点:</strong>
-                    <span>🗻富士 +1</span>
-                    <span>🦅鷹 +3</span>
-                    <span>🍆茄子 +5</span>
-                </div>
-            </div>
+            <div class="instructions"><strong>操作:</strong> タップ/スペース でジャンプ<br><strong>2回連続タップで2段ジャンプ！</strong><br><div class="score-info"><span>🍆茄子 +1</span><span>🗻富士 +3</span><span>🦅鷹 +5 (2段ジャンプ)</span></div></div>
         </div>
-
         <div class="overlay hidden" id="gameOverOverlay">
             <div class="emoji">💥</div>
             <h1>ゲームオーバー</h1>
             <p>スコア: <span id="final-score">0</span></p>
             <p>ハイスコア: <span id="final-high-score">0</span></p>
-            <p id="obstacle-stats" style="font-size:12px; margin-top:5px;"></p>
+            <p id="obstacle-stats" style="font-size:12px;"></p>
             <button class="start-btn" onclick="startGame()">もう一度</button>
-            
-            <div class="share-section">
-                <a class="share-btn" id="lineShareBtn" href="#" target="_blank">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
-                    </svg>
-                    LINEでシェア
-                </a>
-            </div>
+            <div class="share-section"><a class="share-btn" id="lineShareBtn" href="#" target="_blank"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>LINEでシェア</a></div>
         </div>
     </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Screen dimensions
-        let W, H;
-
-        // Game state
-        let gameRunning = false;
-        let score = 0;
-        let highScore = localStorage.getItem('horseGameHighScore') || 0;
-        let gameSpeed = 3;
-        let baseSpeed = 3;
-        let animationId;
-        let frameCount = 0;
-
-        // Obstacle counts for stats
-        let fujiCount = 0;
-        let hawkCount = 0;
-        let eggplantCount = 0;
-
+        let W, H, refSize, groundY = 0;
+        let gameRunning = false, score = 0, highScore = localStorage.getItem('horseGameHighScore') || 0;
+        let gameSpeed = 3, baseSpeed = 3, animationId, frameCount = 0;
+        let fujiCount = 0, hawkCount = 0, eggplantCount = 0;
         document.getElementById('high-score').textContent = highScore;
+        const horse = { x: 0, y: 0, width: 0, height: 0, velocityY: 0, gravity: 0, jumpForce: 0, isJumping: false, canDoubleJump: true, hasDoubleJumped: false, groundY: 0, legPhase: 0 };
+        let obstacles = [], clouds = [];
+        const OBSTACLE_SIZES = { EGGPLANT: { width: 0.035, height: 0.05 }, FUJI: { width: 0.16, height: 0.18 }, HAWK: { width: 0.10, height: 0.05 } };
+        const OBSTACLE_TYPES = { EGGPLANT: { type: 'eggplant', score: 1, minSpeed: 0 }, FUJI: { type: 'fuji', score: 3, minSpeed: 0 }, HAWK: { type: 'hawk', score: 5, minSpeed: 4 } };
 
-        // Ground Y position
-        let groundY = 0;
-
-        // Horse
-        const horse = {
-            x: 0, y: 0,
-            width: 0, height: 0,
-            velocityY: 0,
-            gravity: 0,
-            jumpForce: 0,
-            isJumping: false,
-            groundY: 0,
-            legPhase: 0
-        };
-
-        // Obstacles: fuji, hawk, eggplant
-        let obstacles = [];
-        let clouds = [];
-
-        // Obstacle types
-        const OBSTACLE_TYPES = {
-            FUJI: { type: 'fuji', score: 1, minSpeed: 0 },
-            HAWK: { type: 'hawk', score: 3, minSpeed: 4 },
-            EGGPLANT: { type: 'eggplant', score: 5, minSpeed: 6 }
-        };
-
-        // Setup dimensions
         function setupDimensions() {
-            W = window.innerWidth;
-            H = window.innerHeight;
-            
-            canvas.width = W;
-            canvas.height = H;
-
-            groundY = H * 0.85;
-            
-            const refSize = Math.min(W, H);
-            horse.width = refSize * 0.15;
-            horse.height = horse.width * 0.75;
-            
-            horse.x = W * 0.08;
-            horse.groundY = groundY - horse.height - 5;
-            
-            if (!horse.isJumping) {
-                horse.y = horse.groundY;
-            }
-            
-            horse.gravity = H * 0.0012;
-            horse.jumpForce = -H * 0.022;
-            
+            W = window.innerWidth; H = window.innerHeight;
+            canvas.width = W; canvas.height = H;
+            groundY = H * 0.85; refSize = Math.min(W, H);
+            horse.width = refSize * 0.15; horse.height = horse.width * 0.75;
+            horse.x = W * 0.08; horse.groundY = groundY - horse.height - 5;
+            if (!horse.isJumping) horse.y = horse.groundY;
+            horse.gravity = H * 0.0012; horse.jumpForce = -H * 0.020;
             baseSpeed = Math.max(2, W * 0.003);
-
             clouds = [];
-            for (let i = 0; i < 5; i++) {
-                clouds.push({
-                    x: W * (i / 5) + Math.random() * (W * 0.15),
-                    y: H * (0.08 + Math.random() * 0.15),
-                    size: refSize * (0.03 + Math.random() * 0.02)
-                });
-            }
+            for (let i = 0; i < 5; i++) clouds.push({ x: W * (i / 5) + Math.random() * (W * 0.15), y: H * (0.08 + Math.random() * 0.15), size: refSize * (0.03 + Math.random() * 0.02) });
         }
 
-        // Draw horse
         function drawHorse() {
-            const x = horse.x;
-            const y = horse.y;
-            const s = horse.height / 60;
-            
-            ctx.save();
-            
-            ctx.fillStyle = '#8B4513';
-            ctx.beginPath();
-            ctx.ellipse(x + 40*s, y + 25*s, 35*s, 20*s, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.ellipse(x + 75*s, y + 5*s, 18*s, 12*s, -0.3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x + 60*s, y + 10*s);
-            ctx.quadraticCurveTo(x + 70*s, y + 20*s, x + 65*s, y + 30*s);
-            ctx.lineTo(x + 55*s, y + 25*s);
-            ctx.quadraticCurveTo(x + 55*s, y + 15*s, x + 60*s, y + 10*s);
-            ctx.fill();
-            
-            ctx.beginPath();
-            ctx.moveTo(x + 80*s, y - 5*s);
-            ctx.lineTo(x + 85*s, y - 15*s);
-            ctx.lineTo(x + 90*s, y - 3*s);
-            ctx.fill();
-            
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(x + 82*s, y + 3*s, 3*s, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = '#4a2c0a';
-            ctx.beginPath();
-            ctx.moveTo(x + 55*s, y);
-            ctx.quadraticCurveTo(x + 45*s, y - 10*s, x + 50*s, y + 5*s);
-            ctx.quadraticCurveTo(x + 40*s, y - 5*s, x + 45*s, y + 10*s);
-            ctx.quadraticCurveTo(x + 35*s, y, x + 40*s, y + 15*s);
-            ctx.lineTo(x + 55*s, y + 15*s);
-            ctx.fill();
-            
-            ctx.fillStyle = '#8B4513';
-            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8 * s;
-            
-            ctx.fillRect(x + 55*s, y + 35*s, 8*s, 25*s + legOffset);
-            ctx.fillRect(x + 65*s, y + 35*s, 8*s, 25*s - legOffset);
-            ctx.fillRect(x + 15*s, y + 35*s, 8*s, 25*s - legOffset);
-            ctx.fillRect(x + 25*s, y + 35*s, 8*s, 25*s + legOffset);
-            
-            ctx.fillStyle = '#2d1b0e';
-            ctx.fillRect(x + 54*s, y + 58*s + legOffset, 10*s, 5*s);
-            ctx.fillRect(x + 64*s, y + 58*s - legOffset, 10*s, 5*s);
-            ctx.fillRect(x + 14*s, y + 58*s - legOffset, 10*s, 5*s);
-            ctx.fillRect(x + 24*s, y + 58*s + legOffset, 10*s, 5*s);
-            
-            ctx.fillStyle = '#4a2c0a';
-            ctx.beginPath();
-            ctx.moveTo(x + 5*s, y + 20*s);
-            ctx.quadraticCurveTo(x - 15*s, y + 35*s, x - 10*s, y + 50*s);
-            ctx.quadraticCurveTo(x - 5*s, y + 45*s, x + 5*s, y + 35*s);
-            ctx.fill();
-            
+            const x = horse.x, y = horse.y, s = horse.height / 60;
+            ctx.save(); ctx.fillStyle = '#8B4513';
+            ctx.beginPath(); ctx.ellipse(x + 40*s, y + 25*s, 35*s, 20*s, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.ellipse(x + 75*s, y + 5*s, 18*s, 12*s, -0.3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(x + 60*s, y + 10*s); ctx.quadraticCurveTo(x + 70*s, y + 20*s, x + 65*s, y + 30*s); ctx.lineTo(x + 55*s, y + 25*s); ctx.quadraticCurveTo(x + 55*s, y + 15*s, x + 60*s, y + 10*s); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(x + 80*s, y - 5*s); ctx.lineTo(x + 85*s, y - 15*s); ctx.lineTo(x + 90*s, y - 3*s); ctx.fill();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x + 82*s, y + 3*s, 3*s, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#4a2c0a'; ctx.beginPath(); ctx.moveTo(x + 55*s, y); ctx.quadraticCurveTo(x + 45*s, y - 10*s, x + 50*s, y + 5*s); ctx.quadraticCurveTo(x + 40*s, y - 5*s, x + 45*s, y + 10*s); ctx.quadraticCurveTo(x + 35*s, y, x + 40*s, y + 15*s); ctx.lineTo(x + 55*s, y + 15*s); ctx.fill();
+            ctx.fillStyle = '#8B4513'; const lo = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8 * s;
+            ctx.fillRect(x + 55*s, y + 35*s, 8*s, 25*s + lo); ctx.fillRect(x + 65*s, y + 35*s, 8*s, 25*s - lo); ctx.fillRect(x + 15*s, y + 35*s, 8*s, 25*s - lo); ctx.fillRect(x + 25*s, y + 35*s, 8*s, 25*s + lo);
+            ctx.fillStyle = '#2d1b0e'; ctx.fillRect(x + 54*s, y + 58*s + lo, 10*s, 5*s); ctx.fillRect(x + 64*s, y + 58*s - lo, 10*s, 5*s); ctx.fillRect(x + 14*s, y + 58*s - lo, 10*s, 5*s); ctx.fillRect(x + 24*s, y + 58*s + lo, 10*s, 5*s);
+            ctx.fillStyle = '#4a2c0a'; ctx.beginPath(); ctx.moveTo(x + 5*s, y + 20*s); ctx.quadraticCurveTo(x - 15*s, y + 35*s, x - 10*s, y + 50*s); ctx.quadraticCurveTo(x - 5*s, y + 45*s, x + 5*s, y + 35*s); ctx.fill();
             ctx.restore();
         }
 
-        // Draw Mt. Fuji
         function drawFuji(obs) {
-            const x = obs.x;
-            const height = obs.height;
-            const width = obs.width;
-            
-            ctx.save();
-            
-            ctx.fillStyle = '#4a5568';
-            ctx.beginPath();
-            ctx.moveTo(x, groundY);
-            ctx.lineTo(x + width / 2, groundY - height);
-            ctx.lineTo(x + width, groundY);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.fillStyle = '#FFFFFF';
-            const snowH = height * 0.35;
-            const snowW = width * 0.4;
-            ctx.beginPath();
-            ctx.moveTo(x + width/2 - snowW/2, groundY - height + snowH);
-            ctx.lineTo(x + width/2, groundY - height);
-            ctx.lineTo(x + width/2 + snowW/2, groundY - height + snowH);
-            ctx.lineTo(x + width/2 + snowW/3, groundY - height + snowH + 5);
-            ctx.lineTo(x + width/2, groundY - height + snowH + 8);
-            ctx.lineTo(x + width/2 - snowW/3, groundY - height + snowH + 5);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.1)';
-            ctx.beginPath();
-            ctx.moveTo(x + width/2, groundY - height);
-            ctx.lineTo(x + width, groundY);
-            ctx.lineTo(x + width/2, groundY);
-            ctx.closePath();
-            ctx.fill();
-            
+            const x = obs.x, h = obs.height, w = obs.width;
+            ctx.save(); ctx.fillStyle = '#3d4654';
+            ctx.beginPath(); ctx.moveTo(x - w * 0.08, groundY); ctx.lineTo(x + w / 2, groundY - h); ctx.lineTo(x + w * 1.08, groundY); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#4a5568'; ctx.beginPath(); ctx.moveTo(x, groundY); ctx.lineTo(x + w / 2, groundY - h); ctx.lineTo(x + w, groundY); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#FFF'; const sh = h * 0.4, sw = w * 0.5;
+            ctx.beginPath(); ctx.moveTo(x + w/2 - sw/2, groundY - h + sh); ctx.lineTo(x + w/2, groundY - h); ctx.lineTo(x + w/2 + sw/2, groundY - h + sh); ctx.lineTo(x + w/2 + sw/3, groundY - h + sh + h * 0.08); ctx.lineTo(x + w/2, groundY - h + sh + h * 0.12); ctx.lineTo(x + w/2 - sw/3, groundY - h + sh + h * 0.08); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = 'rgba(0,0,0,0.15)'; ctx.beginPath(); ctx.moveTo(x + w/2, groundY - h); ctx.lineTo(x + w, groundY); ctx.lineTo(x + w/2, groundY); ctx.closePath(); ctx.fill();
             ctx.restore();
         }
 
-        // Draw Hawk (flying)
         function drawHawk(obs) {
-            const x = obs.x;
-            const y = obs.y;
-            const size = obs.width;
-            const wingPhase = Math.sin(frameCount * 0.15) * 0.3;
-            
-            ctx.save();
-            ctx.translate(x + size/2, y);
-            
-            // Body
-            ctx.fillStyle = '#5D4037';
-            ctx.beginPath();
-            ctx.ellipse(0, 0, size * 0.4, size * 0.15, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Head
-            ctx.beginPath();
-            ctx.arc(size * 0.35, -size * 0.05, size * 0.12, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Beak
-            ctx.fillStyle = '#FF8C00';
-            ctx.beginPath();
-            ctx.moveTo(size * 0.47, -size * 0.05);
-            ctx.lineTo(size * 0.58, -size * 0.02);
-            ctx.lineTo(size * 0.47, size * 0.02);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Eye
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(size * 0.38, -size * 0.07, size * 0.03, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Wings
+            const x = obs.x, y = obs.y, sz = obs.width, wp = Math.sin(frameCount * 0.12) * 0.4;
+            ctx.save(); ctx.translate(x + sz/2, y);
+            ctx.fillStyle = '#5D4037'; ctx.beginPath(); ctx.ellipse(0, 0, sz * 0.45, sz * 0.18, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(sz * 0.4, -sz * 0.05, sz * 0.14, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#FF8C00'; ctx.beginPath(); ctx.moveTo(sz * 0.54, -sz * 0.05); ctx.lineTo(sz * 0.68, 0); ctx.lineTo(sz * 0.54, sz * 0.03); ctx.closePath(); ctx.fill();
+            ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(sz * 0.44, -sz * 0.08, sz * 0.05, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(sz * 0.45, -sz * 0.08, sz * 0.025, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#6D4C41';
-            // Left wing
-            ctx.beginPath();
-            ctx.moveTo(-size * 0.1, 0);
-            ctx.quadraticCurveTo(-size * 0.4, -size * (0.4 + wingPhase), -size * 0.5, -size * 0.1);
-            ctx.quadraticCurveTo(-size * 0.3, size * 0.05, -size * 0.1, 0);
-            ctx.fill();
-            
-            // Right wing
-            ctx.beginPath();
-            ctx.moveTo(-size * 0.1, 0);
-            ctx.quadraticCurveTo(-size * 0.4, size * (0.4 + wingPhase), -size * 0.5, size * 0.1);
-            ctx.quadraticCurveTo(-size * 0.3, -size * 0.05, -size * 0.1, 0);
-            ctx.fill();
-            
-            // Tail
-            ctx.fillStyle = '#4E342E';
-            ctx.beginPath();
-            ctx.moveTo(-size * 0.35, 0);
-            ctx.lineTo(-size * 0.55, -size * 0.1);
-            ctx.lineTo(-size * 0.6, 0);
-            ctx.lineTo(-size * 0.55, size * 0.1);
-            ctx.closePath();
-            ctx.fill();
-            
+            ctx.beginPath(); ctx.moveTo(-sz * 0.15, -sz * 0.05); ctx.quadraticCurveTo(-sz * 0.5, -sz * (0.5 + wp), -sz * 0.6, -sz * 0.15); ctx.quadraticCurveTo(-sz * 0.35, sz * 0.05, -sz * 0.15, -sz * 0.05); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(-sz * 0.15, sz * 0.05); ctx.quadraticCurveTo(-sz * 0.5, sz * (0.5 + wp), -sz * 0.6, sz * 0.15); ctx.quadraticCurveTo(-sz * 0.35, -sz * 0.05, -sz * 0.15, sz * 0.05); ctx.fill();
+            ctx.fillStyle = '#4E342E'; ctx.beginPath(); ctx.moveTo(-sz * 0.4, 0); ctx.lineTo(-sz * 0.7, -sz * 0.12); ctx.lineTo(-sz * 0.65, 0); ctx.lineTo(-sz * 0.7, sz * 0.12); ctx.closePath(); ctx.fill();
             ctx.restore();
         }
 
-        // Draw Eggplant
         function drawEggplant(obs) {
-            const x = obs.x;
-            const height = obs.height;
-            const width = obs.width;
-            const centerX = x + width / 2;
-            
+            const x = obs.x, h = obs.height, w = obs.width, cx = x + w / 2;
             ctx.save();
-            
-            // Eggplant body
-            ctx.fillStyle = '#4B0082';
-            ctx.beginPath();
-            ctx.moveTo(centerX, groundY);
-            ctx.quadraticCurveTo(x - width * 0.1, groundY - height * 0.3, x + width * 0.1, groundY - height * 0.7);
-            ctx.quadraticCurveTo(centerX, groundY - height * 1.1, x + width * 0.9, groundY - height * 0.7);
-            ctx.quadraticCurveTo(x + width * 1.1, groundY - height * 0.3, centerX, groundY);
-            ctx.fill();
-            
-            // Highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.15)';
-            ctx.beginPath();
-            ctx.ellipse(centerX + width * 0.15, groundY - height * 0.5, width * 0.08, height * 0.25, 0.3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Stem/cap
-            ctx.fillStyle = '#228B22';
-            ctx.beginPath();
-            ctx.moveTo(centerX - width * 0.15, groundY - height * 0.85);
-            ctx.quadraticCurveTo(centerX, groundY - height * 1.05, centerX + width * 0.15, groundY - height * 0.85);
-            ctx.lineTo(centerX + width * 0.08, groundY - height * 0.75);
-            ctx.lineTo(centerX - width * 0.08, groundY - height * 0.75);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Stem
-            ctx.fillStyle = '#2E7D32';
-            ctx.fillRect(centerX - width * 0.05, groundY - height * 1.05, width * 0.1, height * 0.12);
-            
+            const g = ctx.createRadialGradient(cx - w * 0.2, groundY - h * 0.6, 0, cx, groundY - h * 0.5, h * 0.8);
+            g.addColorStop(0, '#9932CC'); g.addColorStop(0.3, '#6B238E'); g.addColorStop(0.6, '#4B0082'); g.addColorStop(1, '#2E0854');
+            ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx, groundY - 2);
+            ctx.bezierCurveTo(x - w * 0.4, groundY - h * 0.3, x - w * 0.2, groundY - h * 0.8, cx, groundY - h * 0.95);
+            ctx.bezierCurveTo(x + w * 1.2, groundY - h * 0.8, x + w * 1.4, groundY - h * 0.3, cx, groundY - 2); ctx.fill();
+            ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.ellipse(cx - w * 0.2, groundY - h * 0.6, w * 0.12, h * 0.2, -0.4, 0, Math.PI * 2); ctx.fill();
+            const cy = groundY - h * 0.88; ctx.fillStyle = '#2E8B2E';
+            for (let i = 0; i < 4; i++) { const a = (i * Math.PI / 2) + Math.PI / 4, ll = w * 0.35; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.quadraticCurveTo(cx + Math.cos(a) * ll * 0.5, cy + Math.sin(a) * ll * 0.3 - ll * 0.2, cx + Math.cos(a) * ll * 0.6, cy + Math.sin(a) * ll * 0.4); ctx.quadraticCurveTo(cx + Math.cos(a) * ll * 0.3, cy + Math.sin(a) * ll * 0.2, cx, cy); ctx.fill(); }
+            ctx.fillStyle = '#228B22'; ctx.beginPath(); ctx.moveTo(cx - w * 0.08, cy + h * 0.05); ctx.lineTo(cx - w * 0.05, groundY - h * 1.05); ctx.lineTo(cx + w * 0.05, groundY - h * 1.05); ctx.lineTo(cx + w * 0.08, cy + h * 0.05); ctx.closePath(); ctx.fill();
             ctx.restore();
         }
 
-        // Draw obstacle based on type
-        function drawObstacle(obs) {
-            if (obs.type === 'fuji') {
-                drawFuji(obs);
-            } else if (obs.type === 'hawk') {
-                drawHawk(obs);
-            } else if (obs.type === 'eggplant') {
-                drawEggplant(obs);
-            }
-        }
+        function drawObstacle(obs) { if (obs.type === 'fuji') drawFuji(obs); else if (obs.type === 'hawk') drawHawk(obs); else drawEggplant(obs); }
+        function drawClouds() { ctx.fillStyle = 'rgba(255,255,255,0.8)'; clouds.forEach(c => { ctx.beginPath(); ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2); ctx.arc(c.x + c.size * 0.8, c.y - c.size * 0.2, c.size * 0.7, 0, Math.PI * 2); ctx.arc(c.x + c.size * 1.5, c.y, c.size * 0.8, 0, Math.PI * 2); ctx.fill(); }); }
+        function drawBackgroundFuji() { ctx.save(); ctx.globalAlpha = 0.25; const fw = W * 0.35, fh = H * 0.5, fx = W * 0.55; ctx.fillStyle = '#6b7280'; ctx.beginPath(); ctx.moveTo(fx, groundY); ctx.lineTo(fx + fw/2, groundY - fh); ctx.lineTo(fx + fw, groundY); ctx.closePath(); ctx.fill(); ctx.fillStyle = '#FFF'; const sh = fh * 0.28; ctx.beginPath(); ctx.moveTo(fx + fw * 0.32, groundY - fh + sh); ctx.lineTo(fx + fw/2, groundY - fh); ctx.lineTo(fx + fw * 0.68, groundY - fh + sh); ctx.closePath(); ctx.fill(); ctx.restore(); }
+        function drawGround() { ctx.fillStyle = '#228B22'; ctx.fillRect(0, groundY, W, H - groundY); ctx.strokeStyle = '#1a6b1a'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke(); }
+        function drawSky() { const g = ctx.createLinearGradient(0, 0, 0, groundY); g.addColorStop(0, '#87CEEB'); g.addColorStop(0.7, '#B0E0E6'); g.addColorStop(1, '#98D8C8'); ctx.fillStyle = g; ctx.fillRect(0, 0, W, groundY); }
 
-        // Draw clouds
-        function drawClouds() {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-            clouds.forEach(c => {
-                ctx.beginPath();
-                ctx.arc(c.x, c.y, c.size, 0, Math.PI * 2);
-                ctx.arc(c.x + c.size * 0.8, c.y - c.size * 0.2, c.size * 0.7, 0, Math.PI * 2);
-                ctx.arc(c.x + c.size * 1.5, c.y, c.size * 0.8, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
+        function chooseObstacleType() { const t = [OBSTACLE_TYPES.EGGPLANT, OBSTACLE_TYPES.FUJI]; if (gameSpeed >= OBSTACLE_TYPES.HAWK.minSpeed) t.push(OBSTACLE_TYPES.HAWK); const wt = t.map(x => 1 / x.score), tot = wt.reduce((a, b) => a + b, 0); let r = Math.random() * tot; for (let i = 0; i < t.length; i++) { r -= wt[i]; if (r <= 0) return t[i]; } return t[0]; }
+        function createObstacle() { const ti = chooseObstacleType(), obs = { type: ti.type, score: ti.score, x: W + 20, passed: false }; if (ti.type === 'fuji') { obs.width = refSize * OBSTACLE_SIZES.FUJI.width; obs.height = refSize * OBSTACLE_SIZES.FUJI.height; } else if (ti.type === 'hawk') { obs.width = refSize * OBSTACLE_SIZES.HAWK.width; obs.height = refSize * OBSTACLE_SIZES.HAWK.height; const sjh = (horse.jumpForce * horse.jumpForce) / (2 * horse.gravity); obs.y = horse.groundY - sjh * 1.3; } else { obs.width = refSize * OBSTACLE_SIZES.EGGPLANT.width; obs.height = refSize * OBSTACLE_SIZES.EGGPLANT.height; } return obs; }
 
-        // Draw background Fuji
-        function drawBackgroundFuji() {
-            ctx.save();
-            ctx.globalAlpha = 0.25;
-            
-            const fw = W * 0.3;
-            const fh = H * 0.45;
-            const fx = W * 0.6;
-            
-            ctx.fillStyle = '#6b7280';
-            ctx.beginPath();
-            ctx.moveTo(fx, groundY);
-            ctx.lineTo(fx + fw/2, groundY - fh);
-            ctx.lineTo(fx + fw, groundY);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.fillStyle = '#FFFFFF';
-            const sh = fh * 0.25;
-            ctx.beginPath();
-            ctx.moveTo(fx + fw * 0.35, groundY - fh + sh);
-            ctx.lineTo(fx + fw/2, groundY - fh);
-            ctx.lineTo(fx + fw * 0.65, groundY - fh + sh);
-            ctx.closePath();
-            ctx.fill();
-            
-            ctx.restore();
-        }
-
-        // Draw ground
-        function drawGround() {
-            ctx.fillStyle = '#228B22';
-            ctx.fillRect(0, groundY, W, H - groundY);
-            
-            ctx.strokeStyle = '#1a6b1a';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(0, groundY);
-            ctx.lineTo(W, groundY);
-            ctx.stroke();
-            
-            ctx.strokeStyle = '#2d8f2d';
-            ctx.lineWidth = 2;
-            const spacing = Math.max(15, W / 50);
-            for (let i = 0; i < W; i += spacing) {
-                ctx.beginPath();
-                ctx.moveTo(i, groundY);
-                ctx.lineTo(i + 3, groundY - 8);
-                ctx.stroke();
-            }
-        }
-
-        // Draw sky
-        function drawSky() {
-            const gradient = ctx.createLinearGradient(0, 0, 0, groundY);
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.7, '#B0E0E6');
-            gradient.addColorStop(1, '#98D8C8');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, W, groundY);
-        }
-
-        // Choose obstacle type based on difficulty
-        function chooseObstacleType() {
-            const availableTypes = [];
-            
-            // Fuji always available
-            availableTypes.push(OBSTACLE_TYPES.FUJI);
-            
-            // Hawk available after speed 4
-            if (gameSpeed >= OBSTACLE_TYPES.HAWK.minSpeed) {
-                availableTypes.push(OBSTACLE_TYPES.HAWK);
-            }
-            
-            // Eggplant available after speed 6
-            if (gameSpeed >= OBSTACLE_TYPES.EGGPLANT.minSpeed) {
-                availableTypes.push(OBSTACLE_TYPES.EGGPLANT);
-            }
-            
-            // Weighted random - higher score obstacles appear less frequently
-            const weights = availableTypes.map(t => 1 / t.score);
-            const totalWeight = weights.reduce((a, b) => a + b, 0);
-            let random = Math.random() * totalWeight;
-            
-            for (let i = 0; i < availableTypes.length; i++) {
-                random -= weights[i];
-                if (random <= 0) {
-                    return availableTypes[i];
-                }
-            }
-            
-            return availableTypes[0];
-        }
-
-        // Create obstacle
-        function createObstacle() {
-            const typeInfo = chooseObstacleType();
-            const refSize = Math.min(W, H);
-            const baseSize = refSize * 0.08;
-            const sizeVar = 0.7 + Math.random() * 0.3;
-            
-            const obs = {
-                type: typeInfo.type,
-                score: typeInfo.score,
-                x: W + 20,
-                width: baseSize * sizeVar,
-                height: baseSize * sizeVar,
-                passed: false
-            };
-            
-            // Hawks fly at different heights
-            if (typeInfo.type === 'hawk') {
-                obs.y = groundY - H * (0.15 + Math.random() * 0.25);
-                obs.width = baseSize * (0.8 + Math.random() * 0.3);
-                obs.height = obs.width * 0.5;
-            }
-            
-            return obs;
-        }
-
-        // Update game
         function update() {
             frameCount++;
-            
-            // Horse physics
-            if (horse.isJumping || horse.y < horse.groundY) {
-                horse.velocityY += horse.gravity;
-                horse.y += horse.velocityY;
-                
-                if (horse.y >= horse.groundY) {
-                    horse.y = horse.groundY;
-                    horse.velocityY = 0;
-                    horse.isJumping = false;
-                }
-            }
-            
-            if (!horse.isJumping) {
-                horse.legPhase += 0.25;
-            }
-            
-            // Update obstacles
-            obstacles.forEach(obs => {
-                obs.x -= gameSpeed;
-                
-                // Score when passed
-                if (!obs.passed && obs.x + obs.width < horse.x) {
-                    obs.passed = true;
-                    score += obs.score;
-                    
-                    if (obs.type === 'fuji') fujiCount++;
-                    else if (obs.type === 'hawk') hawkCount++;
-                    else if (obs.type === 'eggplant') eggplantCount++;
-                }
-            });
-            
+            if (horse.isJumping || horse.y < horse.groundY) { horse.velocityY += horse.gravity; horse.y += horse.velocityY; if (horse.y >= horse.groundY) { horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.canDoubleJump = true; horse.hasDoubleJumped = false; } }
+            if (!horse.isJumping) horse.legPhase += 0.25;
+            obstacles.forEach(obs => { obs.x -= gameSpeed; if (!obs.passed && obs.x + obs.width < horse.x) { obs.passed = true; score += obs.score; if (obs.type === 'fuji') fujiCount++; else if (obs.type === 'hawk') hawkCount++; else eggplantCount++; } });
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
-            
-            // Spawn obstacles - gap decreases with speed
-            const minGap = Math.max(W * 0.3, W * 0.5 - gameSpeed * W * 0.02);
-            const maxGap = Math.max(W * 0.5, W * 0.8 - gameSpeed * W * 0.03);
-            const lastObs = obstacles[obstacles.length - 1];
-            
-            if (!lastObs || lastObs.x < W - minGap - Math.random() * (maxGap - minGap)) {
-                obstacles.push(createObstacle());
-            }
-            
-            // Update clouds
-            clouds.forEach(c => {
-                c.x -= gameSpeed * 0.15;
-                if (c.x + c.size * 2 < 0) {
-                    c.x = W + c.size;
-                }
-            });
-            
-            // Collision detection
-            const hb = {
-                x: horse.x + horse.width * 0.2,
-                y: horse.y + horse.height * 0.15,
-                w: horse.width * 0.5,
-                h: horse.height * 0.6
-            };
-            
-            for (const obs of obstacles) {
-                let obsHitbox;
-                
-                if (obs.type === 'hawk') {
-                    obsHitbox = {
-                        x: obs.x + obs.width * 0.1,
-                        y: obs.y - obs.height * 0.3,
-                        w: obs.width * 0.8,
-                        h: obs.height * 0.6
-                    };
-                } else {
-                    const obsTop = groundY - obs.height;
-                    obsHitbox = {
-                        x: obs.x + obs.width * 0.2,
-                        y: obsTop,
-                        w: obs.width * 0.6,
-                        h: obs.height
-                    };
-                }
-                
-                if (hb.x < obsHitbox.x + obsHitbox.w &&
-                    hb.x + hb.w > obsHitbox.x &&
-                    hb.y < obsHitbox.y + obsHitbox.h &&
-                    hb.y + hb.h > obsHitbox.y) {
-                    gameOver();
-                    return;
-                }
-            }
-            
-            // Update score display
+            const minGap = Math.max(W * 0.28, W * 0.45 - gameSpeed * W * 0.02), maxGap = Math.max(W * 0.45, W * 0.7 - gameSpeed * W * 0.025);
+            const last = obstacles[obstacles.length - 1]; if (!last || last.x < W - minGap - Math.random() * (maxGap - minGap)) obstacles.push(createObstacle());
+            clouds.forEach(c => { c.x -= gameSpeed * 0.15; if (c.x + c.size * 2 < 0) c.x = W + c.size; });
+            const hb = { x: horse.x + horse.width * 0.2, y: horse.y + horse.height * 0.15, w: horse.width * 0.5, h: horse.height * 0.6 };
+            for (const obs of obstacles) { let ob; if (obs.type === 'hawk') ob = { x: obs.x + obs.width * 0.1, y: obs.y - obs.height * 0.4, w: obs.width * 0.8, h: obs.height * 0.8 }; else if (obs.type === 'eggplant') ob = { x: obs.x, y: groundY - obs.height + obs.height * 0.3, w: obs.width, h: obs.height * 0.6 }; else ob = { x: obs.x + obs.width * 0.15, y: groundY - obs.height, w: obs.width * 0.7, h: obs.height }; if (hb.x < ob.x + ob.w && hb.x + hb.w > ob.x && hb.y < ob.y + ob.h && hb.y + hb.h > ob.y) { gameOver(); return; } }
             document.getElementById('current-score').textContent = score;
-            
-            // Progressive difficulty - speed increases over time
-            const maxSpeed = baseSpeed * 3;
-            if (frameCount % 300 === 0 && gameSpeed < maxSpeed) {
-                gameSpeed += baseSpeed * 0.08;
-            }
+            const maxSpd = baseSpeed * 2.8; if (frameCount % 350 === 0 && gameSpeed < maxSpd) gameSpeed += baseSpeed * 0.06;
         }
 
-        // Draw
-        function draw() {
-            ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, W, H);
-            
-            drawSky();
-            drawBackgroundFuji();
-            drawClouds();
-            drawGround();
-            obstacles.forEach(obs => drawObstacle(obs));
-            drawHorse();
-        }
+        function draw() { drawSky(); drawBackgroundFuji(); drawClouds(); drawGround(); obstacles.forEach(obs => drawObstacle(obs)); drawHorse(); }
+        function gameLoop() { if (!gameRunning) return; update(); draw(); animationId = requestAnimationFrame(gameLoop); }
+        function jump() { if (!horse.isJumping && horse.y >= horse.groundY - 5) { horse.isJumping = true; horse.velocityY = horse.jumpForce; horse.canDoubleJump = true; horse.hasDoubleJumped = false; } else if (horse.isJumping && horse.canDoubleJump && !horse.hasDoubleJumped) { horse.velocityY = horse.jumpForce; horse.hasDoubleJumped = true; horse.canDoubleJump = false; } }
+        function startGame() { setupDimensions(); gameRunning = true; score = 0; frameCount = 0; fujiCount = 0; hawkCount = 0; eggplantCount = 0; gameSpeed = baseSpeed; obstacles = []; horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.canDoubleJump = true; horse.hasDoubleJumped = false; document.getElementById('startOverlay').classList.add('hidden'); document.getElementById('gameOverOverlay').classList.add('hidden'); gameLoop(); }
+        function gameOver() { gameRunning = false; cancelAnimationFrame(animationId); if (score > highScore) { highScore = score; localStorage.setItem('horseGameHighScore', highScore); } document.getElementById('high-score').textContent = highScore; document.getElementById('final-score').textContent = score; document.getElementById('final-high-score').textContent = highScore; document.getElementById('obstacle-stats').textContent = '🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount; document.getElementById('gameOverOverlay').classList.remove('hidden'); const st = '🐴馬ジャンプゲーム\nスコア: ' + score + '点！\n🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount + '\n'; document.getElementById('lineShareBtn').href = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(st); }
+        function toggleFullscreen() { const el = document.documentElement; if (!document.fullscreenElement) { if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } else { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } }
 
-        // Game loop
-        function gameLoop() {
-            if (!gameRunning) return;
-            update();
-            draw();
-            animationId = requestAnimationFrame(gameLoop);
-        }
-
-        // Jump
-        function jump() {
-            if (!horse.isJumping && horse.y >= horse.groundY - 5) {
-                horse.isJumping = true;
-                horse.velocityY = horse.jumpForce;
-            }
-        }
-
-        // Start game
-        function startGame() {
-            setupDimensions();
-            gameRunning = true;
-            score = 0;
-            frameCount = 0;
-            fujiCount = 0;
-            hawkCount = 0;
-            eggplantCount = 0;
-            gameSpeed = baseSpeed;
-            obstacles = [];
-            horse.y = horse.groundY;
-            horse.velocityY = 0;
-            horse.isJumping = false;
-            
-            document.getElementById('startOverlay').classList.add('hidden');
-            document.getElementById('gameOverOverlay').classList.add('hidden');
-            
-            gameLoop();
-        }
-
-        // Game over
-        function gameOver() {
-            gameRunning = false;
-            cancelAnimationFrame(animationId);
-            
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('horseGameHighScore', highScore);
-            }
-            
-            document.getElementById('high-score').textContent = highScore;
-            document.getElementById('final-score').textContent = score;
-            document.getElementById('final-high-score').textContent = highScore;
-            document.getElementById('obstacle-stats').textContent = 
-                `🗻${fujiCount} 🦅${hawkCount} 🍆${eggplantCount}`;
-            document.getElementById('gameOverOverlay').classList.remove('hidden');
-            
-            const gameUrl = window.location.href;
-            const shareText = `🐴馬ジャンプゲーム\nスコア: ${score}点！\n🗻${fujiCount} 🦅${hawkCount} 🍆${eggplantCount}\n`;
-            document.getElementById('lineShareBtn').href = 
-                `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(gameUrl)}&text=${encodeURIComponent(shareText)}`;
-        }
-
-        // Fullscreen (PC only)
-        function toggleFullscreen() {
-            const elem = document.documentElement;
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (elem.requestFullscreen) elem.requestFullscreen();
-                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-            } else {
-                if (document.exitFullscreen) document.exitFullscreen();
-                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-            }
-        }
-
-        function updateFullscreenButton() {
-            const fs = document.fullscreenElement || document.webkitFullscreenElement;
-            document.getElementById('fullscreenText').textContent = fs ? '縮小' : '全画面';
-        }
-
-        // Events
-        window.addEventListener('resize', () => {
-            setupDimensions();
-            if (!gameRunning) draw();
-        });
-
-        window.addEventListener('orientationchange', () => {
-            setTimeout(() => { setupDimensions(); if (!gameRunning) draw(); }, 150);
-        });
-
-        document.addEventListener('fullscreenchange', () => {
-            updateFullscreenButton();
-            setTimeout(() => { setupDimensions(); if (!gameRunning) draw(); }, 100);
-        });
-        document.addEventListener('webkitfullscreenchange', () => {
-            updateFullscreenButton();
-            setTimeout(() => { setupDimensions(); if (!gameRunning) draw(); }, 100);
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' || e.code === 'ArrowUp') {
-                e.preventDefault();
-                if (gameRunning) jump();
-            }
-        });
-
+        window.addEventListener('resize', () => { setupDimensions(); if (!gameRunning) draw(); });
+        window.addEventListener('orientationchange', () => { setTimeout(() => { setupDimensions(); if (!gameRunning) draw(); }, 150); });
+        document.addEventListener('fullscreenchange', () => { setTimeout(() => { setupDimensions(); if (!gameRunning) draw(); }, 100); });
+        document.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') { e.preventDefault(); if (gameRunning) jump(); } });
         canvas.addEventListener('click', () => { if (gameRunning) jump(); });
-        canvas.addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            if (gameRunning) jump();
-        }, { passive: false });
-
-        let lastTouchEnd = 0;
-        document.addEventListener('touchend', (e) => {
-            if (Date.now() - lastTouchEnd <= 300) e.preventDefault();
-            lastTouchEnd = Date.now();
-        }, { passive: false });
-
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); if (gameRunning) jump(); }, { passive: false });
         document.addEventListener('contextmenu', (e) => e.preventDefault());
 
-        // Init
-        setupDimensions();
-        draw();
+        setupDimensions(); draw();
     </script>
 </body>
 </html>
