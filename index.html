@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>馬ジャンプゲーム 🐴🗻</title>
+    <title>馬ジャンプゲーム 🐴🗻🦅🍆</title>
     
     <!-- OGP tags for LINE/SNS sharing -->
-    <meta property="og:title" content="馬ジャンプゲーム 🐴🗻">
-    <meta property="og:description" content="富士山を飛び越えて走り続けろ！スペース/タップでジャンプ！">
+    <meta property="og:title" content="馬ジャンプゲーム 🐴🗻🦅🍆">
+    <meta property="og:description" content="一富士二鷹三茄子を飛び越えろ！タップでジャンプ！">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://watayu622.github.io/horse-jump-game/">
-    <meta property="og:image" content="https://watayu622.github.io/horse-jump-game/ogp.png">
+    <meta property="og:url" content="https://YOUR_USERNAME.github.io/horse-jump-game/">
+    <meta property="og:image" content="https://YOUR_USERNAME.github.io/horse-jump-game/ogp.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <!-- PWA / Fullscreen support -->
+    <!-- PWA support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="馬ジャンプ">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#87CEEB">
     
@@ -38,8 +37,6 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
-            /* iOS safe areas */
-            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         #gameCanvas {
@@ -95,7 +92,7 @@
             z-index: 200;
             pointer-events: auto;
             max-width: 90%;
-            width: 300px;
+            width: 320px;
         }
 
         .overlay.hidden {
@@ -115,7 +112,7 @@
         }
 
         .overlay .emoji {
-            font-size: 45px;
+            font-size: 40px;
             margin-bottom: 10px;
         }
 
@@ -141,12 +138,23 @@
         }
 
         .instructions {
-            margin-top: 10px;
+            margin-top: 12px;
             padding: 10px;
             background: #f0f0f0;
             border-radius: 10px;
             font-size: 12px;
             color: #555;
+            text-align: left;
+        }
+
+        .instructions .score-info {
+            margin-top: 8px;
+            font-size: 11px;
+        }
+
+        .instructions .score-info span {
+            display: inline-block;
+            margin-right: 10px;
         }
 
         .share-section {
@@ -175,6 +183,7 @@
             height: 20px;
         }
 
+        /* PC only fullscreen button */
         .fullscreen-btn {
             position: absolute;
             top: max(10px, env(safe-area-inset-top));
@@ -189,9 +198,7 @@
             z-index: 100;
             pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 5px;
+            display: none;
         }
 
         .fullscreen-btn svg {
@@ -199,67 +206,13 @@
             height: 16px;
         }
 
-        /* Mobile prompt overlay */
-        .mobile-prompt {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .mobile-prompt.hidden {
-            display: none;
-        }
-
-        .mobile-prompt .icon {
-            font-size: 50px;
-            margin-bottom: 15px;
-        }
-
-        .mobile-prompt h2 {
-            font-size: 20px;
-            margin-bottom: 12px;
-        }
-
-        .mobile-prompt p {
-            font-size: 14px;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            line-height: 1.5;
-        }
-
-        .mobile-prompt .highlight {
-            background: rgba(255,255,255,0.15);
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            font-size: 13px;
-        }
-
-        .mobile-prompt .highlight strong {
-            color: #ffd700;
-        }
-
-        .mobile-prompt .start-btn {
-            margin-top: 15px;
-        }
-
-        .mobile-prompt .skip-link {
-            margin-top: 15px;
-            color: rgba(255,255,255,0.6);
-            font-size: 13px;
-            cursor: pointer;
-            text-decoration: underline;
+        /* Show only on non-touch devices (PC) */
+        @media (hover: hover) and (pointer: fine) {
+            .fullscreen-btn {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
         }
 
         @media (max-height: 400px) {
@@ -269,22 +222,15 @@
             }
             .overlay {
                 padding: 15px;
-                width: 260px;
+                width: 280px;
             }
             .overlay .emoji {
-                font-size: 30px;
+                font-size: 28px;
             }
             .overlay h1 {
                 font-size: 18px;
             }
             .instructions {
-                display: none;
-            }
-        }
-
-        /* Hide fullscreen button on iOS (not supported) */
-        @supports (-webkit-touch-callout: none) {
-            .fullscreen-btn {
                 display: none;
             }
         }
@@ -307,13 +253,18 @@
         </button>
         
         <div class="overlay" id="startOverlay">
-            <div class="emoji">🐴🗻</div>
+            <div class="emoji">🐴🗻🦅🍆</div>
             <h1>馬ジャンプゲーム</h1>
-            <p>富士山を飛び越えて走り続けよう！</p>
+            <p>一富士二鷹三茄子を飛び越えろ！</p>
             <button class="start-btn" onclick="startGame()">ゲームスタート</button>
             <div class="instructions">
-                <strong>操作方法:</strong><br>
-                スペースキー / クリック / タップ でジャンプ
+                <strong>操作:</strong> スペース / クリック / タップ でジャンプ<br>
+                <div class="score-info">
+                    <strong>得点:</strong>
+                    <span>🗻富士 +1</span>
+                    <span>🦅鷹 +3</span>
+                    <span>🍆茄子 +5</span>
+                </div>
             </div>
         </div>
 
@@ -322,6 +273,7 @@
             <h1>ゲームオーバー</h1>
             <p>スコア: <span id="final-score">0</span></p>
             <p>ハイスコア: <span id="final-high-score">0</span></p>
+            <p id="obstacle-stats" style="font-size:12px; margin-top:5px;"></p>
             <button class="start-btn" onclick="startGame()">もう一度</button>
             
             <div class="share-section">
@@ -335,24 +287,9 @@
         </div>
     </div>
 
-    <!-- Mobile prompt -->
-    <div class="mobile-prompt hidden" id="mobilePrompt">
-        <div class="icon">🐴🗻</div>
-        <h2>馬ジャンプゲーム</h2>
-        <div id="promptContent"></div>
-        <button class="start-btn" id="promptStartBtn">ゲームスタート</button>
-        <div class="skip-link" id="promptSkip"></div>
-    </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Device detection
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-        const isAndroid = /Android/.test(navigator.userAgent);
-        const isMobile = isIOS || isAndroid;
-        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
         // Screen dimensions
         let W, H;
@@ -362,7 +299,14 @@
         let score = 0;
         let highScore = localStorage.getItem('horseGameHighScore') || 0;
         let gameSpeed = 3;
+        let baseSpeed = 3;
         let animationId;
+        let frameCount = 0;
+
+        // Obstacle counts for stats
+        let fujiCount = 0;
+        let hawkCount = 0;
+        let eggplantCount = 0;
 
         document.getElementById('high-score').textContent = highScore;
 
@@ -381,9 +325,16 @@
             legPhase: 0
         };
 
-        // Obstacles and clouds
+        // Obstacles: fuji, hawk, eggplant
         let obstacles = [];
         let clouds = [];
+
+        // Obstacle types
+        const OBSTACLE_TYPES = {
+            FUJI: { type: 'fuji', score: 1, minSpeed: 0 },
+            HAWK: { type: 'hawk', score: 3, minSpeed: 4 },
+            EGGPLANT: { type: 'eggplant', score: 5, minSpeed: 6 }
+        };
 
         // Setup dimensions
         function setupDimensions() {
@@ -406,10 +357,10 @@
                 horse.y = horse.groundY;
             }
             
-            horse.gravity = H * 0.001;
-            horse.jumpForce = -H * 0.02;
+            horse.gravity = H * 0.0012;
+            horse.jumpForce = -H * 0.022;
             
-            gameSpeed = Math.max(2, W * 0.004);
+            baseSpeed = Math.max(2, W * 0.003);
 
             clouds = [];
             for (let i = 0; i < 5; i++) {
@@ -529,6 +480,123 @@
             ctx.restore();
         }
 
+        // Draw Hawk (flying)
+        function drawHawk(obs) {
+            const x = obs.x;
+            const y = obs.y;
+            const size = obs.width;
+            const wingPhase = Math.sin(frameCount * 0.15) * 0.3;
+            
+            ctx.save();
+            ctx.translate(x + size/2, y);
+            
+            // Body
+            ctx.fillStyle = '#5D4037';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size * 0.4, size * 0.15, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.arc(size * 0.35, -size * 0.05, size * 0.12, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Beak
+            ctx.fillStyle = '#FF8C00';
+            ctx.beginPath();
+            ctx.moveTo(size * 0.47, -size * 0.05);
+            ctx.lineTo(size * 0.58, -size * 0.02);
+            ctx.lineTo(size * 0.47, size * 0.02);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(size * 0.38, -size * 0.07, size * 0.03, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Wings
+            ctx.fillStyle = '#6D4C41';
+            // Left wing
+            ctx.beginPath();
+            ctx.moveTo(-size * 0.1, 0);
+            ctx.quadraticCurveTo(-size * 0.4, -size * (0.4 + wingPhase), -size * 0.5, -size * 0.1);
+            ctx.quadraticCurveTo(-size * 0.3, size * 0.05, -size * 0.1, 0);
+            ctx.fill();
+            
+            // Right wing
+            ctx.beginPath();
+            ctx.moveTo(-size * 0.1, 0);
+            ctx.quadraticCurveTo(-size * 0.4, size * (0.4 + wingPhase), -size * 0.5, size * 0.1);
+            ctx.quadraticCurveTo(-size * 0.3, -size * 0.05, -size * 0.1, 0);
+            ctx.fill();
+            
+            // Tail
+            ctx.fillStyle = '#4E342E';
+            ctx.beginPath();
+            ctx.moveTo(-size * 0.35, 0);
+            ctx.lineTo(-size * 0.55, -size * 0.1);
+            ctx.lineTo(-size * 0.6, 0);
+            ctx.lineTo(-size * 0.55, size * 0.1);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // Draw Eggplant
+        function drawEggplant(obs) {
+            const x = obs.x;
+            const height = obs.height;
+            const width = obs.width;
+            const centerX = x + width / 2;
+            
+            ctx.save();
+            
+            // Eggplant body
+            ctx.fillStyle = '#4B0082';
+            ctx.beginPath();
+            ctx.moveTo(centerX, groundY);
+            ctx.quadraticCurveTo(x - width * 0.1, groundY - height * 0.3, x + width * 0.1, groundY - height * 0.7);
+            ctx.quadraticCurveTo(centerX, groundY - height * 1.1, x + width * 0.9, groundY - height * 0.7);
+            ctx.quadraticCurveTo(x + width * 1.1, groundY - height * 0.3, centerX, groundY);
+            ctx.fill();
+            
+            // Highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.15)';
+            ctx.beginPath();
+            ctx.ellipse(centerX + width * 0.15, groundY - height * 0.5, width * 0.08, height * 0.25, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Stem/cap
+            ctx.fillStyle = '#228B22';
+            ctx.beginPath();
+            ctx.moveTo(centerX - width * 0.15, groundY - height * 0.85);
+            ctx.quadraticCurveTo(centerX, groundY - height * 1.05, centerX + width * 0.15, groundY - height * 0.85);
+            ctx.lineTo(centerX + width * 0.08, groundY - height * 0.75);
+            ctx.lineTo(centerX - width * 0.08, groundY - height * 0.75);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Stem
+            ctx.fillStyle = '#2E7D32';
+            ctx.fillRect(centerX - width * 0.05, groundY - height * 1.05, width * 0.1, height * 0.12);
+            
+            ctx.restore();
+        }
+
+        // Draw obstacle based on type
+        function drawObstacle(obs) {
+            if (obs.type === 'fuji') {
+                drawFuji(obs);
+            } else if (obs.type === 'hawk') {
+                drawHawk(obs);
+            } else if (obs.type === 'eggplant') {
+                drawEggplant(obs);
+            }
+        }
+
         // Draw clouds
         function drawClouds() {
             ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
@@ -603,8 +671,69 @@
             ctx.fillRect(0, 0, W, groundY);
         }
 
+        // Choose obstacle type based on difficulty
+        function chooseObstacleType() {
+            const availableTypes = [];
+            
+            // Fuji always available
+            availableTypes.push(OBSTACLE_TYPES.FUJI);
+            
+            // Hawk available after speed 4
+            if (gameSpeed >= OBSTACLE_TYPES.HAWK.minSpeed) {
+                availableTypes.push(OBSTACLE_TYPES.HAWK);
+            }
+            
+            // Eggplant available after speed 6
+            if (gameSpeed >= OBSTACLE_TYPES.EGGPLANT.minSpeed) {
+                availableTypes.push(OBSTACLE_TYPES.EGGPLANT);
+            }
+            
+            // Weighted random - higher score obstacles appear less frequently
+            const weights = availableTypes.map(t => 1 / t.score);
+            const totalWeight = weights.reduce((a, b) => a + b, 0);
+            let random = Math.random() * totalWeight;
+            
+            for (let i = 0; i < availableTypes.length; i++) {
+                random -= weights[i];
+                if (random <= 0) {
+                    return availableTypes[i];
+                }
+            }
+            
+            return availableTypes[0];
+        }
+
+        // Create obstacle
+        function createObstacle() {
+            const typeInfo = chooseObstacleType();
+            const refSize = Math.min(W, H);
+            const baseSize = refSize * 0.08;
+            const sizeVar = 0.7 + Math.random() * 0.3;
+            
+            const obs = {
+                type: typeInfo.type,
+                score: typeInfo.score,
+                x: W + 20,
+                width: baseSize * sizeVar,
+                height: baseSize * sizeVar,
+                passed: false
+            };
+            
+            // Hawks fly at different heights
+            if (typeInfo.type === 'hawk') {
+                obs.y = groundY - H * (0.15 + Math.random() * 0.25);
+                obs.width = baseSize * (0.8 + Math.random() * 0.3);
+                obs.height = obs.width * 0.5;
+            }
+            
+            return obs;
+        }
+
         // Update game
         function update() {
+            frameCount++;
+            
+            // Horse physics
             if (horse.isJumping || horse.y < horse.groundY) {
                 horse.velocityY += horse.gravity;
                 horse.y += horse.velocityY;
@@ -620,27 +749,33 @@
                 horse.legPhase += 0.25;
             }
             
+            // Update obstacles
             obstacles.forEach(obs => {
                 obs.x -= gameSpeed;
+                
+                // Score when passed
+                if (!obs.passed && obs.x + obs.width < horse.x) {
+                    obs.passed = true;
+                    score += obs.score;
+                    
+                    if (obs.type === 'fuji') fujiCount++;
+                    else if (obs.type === 'hawk') hawkCount++;
+                    else if (obs.type === 'eggplant') eggplantCount++;
+                }
             });
             
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
             
-            const minGap = W * 0.5;
-            const maxGap = W * 0.8;
+            // Spawn obstacles - gap decreases with speed
+            const minGap = Math.max(W * 0.3, W * 0.5 - gameSpeed * W * 0.02);
+            const maxGap = Math.max(W * 0.5, W * 0.8 - gameSpeed * W * 0.03);
             const lastObs = obstacles[obstacles.length - 1];
             
             if (!lastObs || lastObs.x < W - minGap - Math.random() * (maxGap - minGap)) {
-                const refSize = Math.min(W, H);
-                const baseSize = refSize * 0.08;
-                const sizeVar = 0.6 + Math.random() * 0.35;
-                obstacles.push({
-                    x: W + 20,
-                    width: baseSize * sizeVar,
-                    height: baseSize * sizeVar * 0.85
-                });
+                obstacles.push(createObstacle());
             }
             
+            // Update clouds
             clouds.forEach(c => {
                 c.x -= gameSpeed * 0.15;
                 if (c.x + c.size * 2 < 0) {
@@ -648,6 +783,7 @@
                 }
             });
             
+            // Collision detection
             const hb = {
                 x: horse.x + horse.width * 0.2,
                 y: horse.y + horse.height * 0.15,
@@ -656,21 +792,41 @@
             };
             
             for (const obs of obstacles) {
-                const obsTop = groundY - obs.height;
-                if (hb.x < obs.x + obs.width * 0.7 &&
-                    hb.x + hb.w > obs.x + obs.width * 0.3 &&
-                    hb.y + hb.h > obsTop + obs.height * 0.1) {
+                let obsHitbox;
+                
+                if (obs.type === 'hawk') {
+                    obsHitbox = {
+                        x: obs.x + obs.width * 0.1,
+                        y: obs.y - obs.height * 0.3,
+                        w: obs.width * 0.8,
+                        h: obs.height * 0.6
+                    };
+                } else {
+                    const obsTop = groundY - obs.height;
+                    obsHitbox = {
+                        x: obs.x + obs.width * 0.2,
+                        y: obsTop,
+                        w: obs.width * 0.6,
+                        h: obs.height
+                    };
+                }
+                
+                if (hb.x < obsHitbox.x + obsHitbox.w &&
+                    hb.x + hb.w > obsHitbox.x &&
+                    hb.y < obsHitbox.y + obsHitbox.h &&
+                    hb.y + hb.h > obsHitbox.y) {
                     gameOver();
                     return;
                 }
             }
             
-            score++;
-            document.getElementById('current-score').textContent = Math.floor(score / 10);
+            // Update score display
+            document.getElementById('current-score').textContent = score;
             
-            const maxSpeed = W * 0.008;
-            if (score % 1200 === 0 && gameSpeed < maxSpeed) {
-                gameSpeed += W * 0.0003;
+            // Progressive difficulty - speed increases over time
+            const maxSpeed = baseSpeed * 3;
+            if (frameCount % 300 === 0 && gameSpeed < maxSpeed) {
+                gameSpeed += baseSpeed * 0.08;
             }
         }
 
@@ -683,7 +839,7 @@
             drawBackgroundFuji();
             drawClouds();
             drawGround();
-            obstacles.forEach(obs => drawFuji(obs));
+            obstacles.forEach(obs => drawObstacle(obs));
             drawHorse();
         }
 
@@ -705,11 +861,14 @@
 
         // Start game
         function startGame() {
-            document.getElementById('mobilePrompt').classList.add('hidden');
             setupDimensions();
             gameRunning = true;
             score = 0;
-            gameSpeed = Math.max(2, W * 0.003);
+            frameCount = 0;
+            fujiCount = 0;
+            hawkCount = 0;
+            eggplantCount = 0;
+            gameSpeed = baseSpeed;
             obstacles = [];
             horse.y = horse.groundY;
             horse.velocityY = 0;
@@ -726,84 +885,39 @@
             gameRunning = false;
             cancelAnimationFrame(animationId);
             
-            const finalScore = Math.floor(score / 10);
-            if (finalScore > highScore) {
-                highScore = finalScore;
+            if (score > highScore) {
+                highScore = score;
                 localStorage.setItem('horseGameHighScore', highScore);
             }
             
             document.getElementById('high-score').textContent = highScore;
-            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('final-score').textContent = score;
             document.getElementById('final-high-score').textContent = highScore;
+            document.getElementById('obstacle-stats').textContent = 
+                `🗻${fujiCount} 🦅${hawkCount} 🍆${eggplantCount}`;
             document.getElementById('gameOverOverlay').classList.remove('hidden');
             
             const gameUrl = window.location.href;
-            const shareText = `🐴馬ジャンプゲーム🗻\nスコア: ${finalScore}点！\n`;
+            const shareText = `🐴馬ジャンプゲーム\nスコア: ${score}点！\n🗻${fujiCount} 🦅${hawkCount} 🍆${eggplantCount}\n`;
             document.getElementById('lineShareBtn').href = 
                 `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(gameUrl)}&text=${encodeURIComponent(shareText)}`;
         }
 
-        // Fullscreen (for Android/PC)
+        // Fullscreen (PC only)
         function toggleFullscreen() {
             const elem = document.documentElement;
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (elem.requestFullscreen) {
-                    elem.requestFullscreen();
-                } else if (elem.webkitRequestFullscreen) {
-                    elem.webkitRequestFullscreen();
-                }
+                if (elem.requestFullscreen) elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
             }
         }
 
         function updateFullscreenButton() {
             const fs = document.fullscreenElement || document.webkitFullscreenElement;
             document.getElementById('fullscreenText').textContent = fs ? '縮小' : '全画面';
-        }
-
-        // Show mobile prompt
-        function showMobilePrompt() {
-            const prompt = document.getElementById('mobilePrompt');
-            const content = document.getElementById('promptContent');
-            const startBtn = document.getElementById('promptStartBtn');
-            const skipLink = document.getElementById('promptSkip');
-
-            if (isStandalone) {
-                // Already in standalone/fullscreen mode
-                return;
-            }
-
-            if (isIOS) {
-                content.innerHTML = `
-                    <p>全画面で遊ぶには：</p>
-                    <div class="highlight">
-                        <strong>① 下の共有ボタン</strong> <span style="font-size:18px">⬆️</span> をタップ<br>
-                        <strong>②「ホーム画面に追加」</strong>を選択
-                    </div>
-                    <p style="font-size:12px; opacity:0.7;">ホーム画面から起動すると<br>全画面でプレイできます</p>
-                `;
-                skipLink.textContent = 'このまま遊ぶ';
-                skipLink.onclick = () => prompt.classList.add('hidden');
-                startBtn.textContent = 'このまま開始';
-                startBtn.onclick = startGame;
-            } else if (isAndroid) {
-                content.innerHTML = `<p>全画面モードでプレイ！</p>`;
-                startBtn.textContent = '全画面で開始';
-                startBtn.onclick = () => {
-                    prompt.classList.add('hidden');
-                    toggleFullscreen();
-                    setTimeout(startGame, 300);
-                };
-                skipLink.textContent = '通常モードで遊ぶ';
-                skipLink.onclick = startGame;
-            }
-
-            prompt.classList.remove('hidden');
         }
 
         // Events
@@ -849,10 +963,6 @@
         // Init
         setupDimensions();
         draw();
-        
-        if (isMobile && !isStandalone) {
-            showMobilePrompt();
-        }
     </script>
 </body>
 </html>
