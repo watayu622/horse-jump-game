@@ -9,15 +9,17 @@
     <meta property="og:title" content="馬ジャンプゲーム 🐴🗻">
     <meta property="og:description" content="富士山を飛び越えて走り続けろ！スペース/タップでジャンプ！">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://watayu622.github.io/horse-jump-game/">
-    <meta property="og:image" content="https://watayu622.github.io/horse-jump-game/ogp.png">
+    <meta property="og:url" content="https://YOUR_USERNAME.github.io/horse-jump-game/">
+    <meta property="og:image" content="https://YOUR_USERNAME.github.io/horse-jump-game/ogp.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <!-- Fullscreen support -->
+    <!-- PWA / Fullscreen support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="馬ジャンプ">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#87CEEB">
     
     <style>
         * {
@@ -36,6 +38,8 @@
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
+            /* iOS safe areas */
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
         }
 
         #gameCanvas {
@@ -43,6 +47,8 @@
             position: fixed;
             top: 0;
             left: 0;
+            width: 100%;
+            height: 100%;
         }
 
         .ui-layer {
@@ -57,7 +63,7 @@
 
         .score-board {
             position: absolute;
-            top: 10px;
+            top: max(10px, env(safe-area-inset-top));
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -121,7 +127,7 @@
             border: none;
             border-radius: 30px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             margin-top: 8px;
             -webkit-tap-highlight-color: transparent;
         }
@@ -171,8 +177,8 @@
 
         .fullscreen-btn {
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: max(10px, env(safe-area-inset-top));
+            right: max(10px, env(safe-area-inset-right));
             padding: 8px 12px;
             background: rgba(0, 0, 0, 0.6);
             color: white;
@@ -193,13 +199,14 @@
             height: 16px;
         }
 
-        .tap-fullscreen {
+        /* Mobile prompt overlay */
+        .mobile-prompt {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -210,40 +217,47 @@
             padding: 20px;
         }
 
-        .tap-fullscreen.hidden {
+        .mobile-prompt.hidden {
             display: none;
         }
 
-        .tap-fullscreen .icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-        }
-
-        .tap-fullscreen h2 {
-            font-size: 22px;
+        .mobile-prompt .icon {
+            font-size: 50px;
             margin-bottom: 15px;
         }
 
-        .tap-fullscreen p {
-            font-size: 16px;
-            opacity: 0.9;
-            margin-bottom: 25px;
+        .mobile-prompt h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
         }
 
-        .tap-fullscreen .tap-btn {
-            padding: 15px 40px;
-            font-size: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-        }
-
-        .tap-fullscreen .skip-link {
-            margin-top: 20px;
-            color: rgba(255,255,255,0.7);
+        .mobile-prompt p {
             font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .mobile-prompt .highlight {
+            background: rgba(255,255,255,0.15);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+
+        .mobile-prompt .highlight strong {
+            color: #ffd700;
+        }
+
+        .mobile-prompt .start-btn {
+            margin-top: 15px;
+        }
+
+        .mobile-prompt .skip-link {
+            margin-top: 15px;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
             cursor: pointer;
             text-decoration: underline;
         }
@@ -264,6 +278,13 @@
                 font-size: 18px;
             }
             .instructions {
+                display: none;
+            }
+        }
+
+        /* Hide fullscreen button on iOS (not supported) */
+        @supports (-webkit-touch-callout: none) {
+            .fullscreen-btn {
                 display: none;
             }
         }
@@ -314,34 +335,41 @@
         </div>
     </div>
 
-    <div class="tap-fullscreen hidden" id="tapFullscreen">
-        <div class="icon">📱</div>
+    <!-- Mobile prompt -->
+    <div class="mobile-prompt hidden" id="mobilePrompt">
+        <div class="icon">🐴🗻</div>
         <h2>馬ジャンプゲーム</h2>
-        <p>全画面でプレイしよう！</p>
-        <button class="tap-btn" onclick="enterFullscreenAndStart()">タップして開始</button>
-        <div class="skip-link" onclick="skipFullscreen()">全画面なしで遊ぶ</div>
+        <div id="promptContent"></div>
+        <button class="start-btn" id="promptStartBtn">ゲームスタート</button>
+        <div class="skip-link" id="promptSkip"></div>
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        // Device detection
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const isAndroid = /Android/.test(navigator.userAgent);
+        const isMobile = isIOS || isAndroid;
+        const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
 
         // Screen dimensions
-        let screenWidth, screenHeight;
-        let isPortrait = false;
+        let W, H;
 
         // Game state
         let gameRunning = false;
         let score = 0;
         let highScore = localStorage.getItem('horseGameHighScore') || 0;
-        let gameSpeed = 4;
+        let gameSpeed = 3;
         let animationId;
 
         document.getElementById('high-score').textContent = highScore;
 
-        // Horse object
+        // Ground Y position
+        let groundY = 0;
+
+        // Horse
         const horse = {
             x: 0, y: 0,
             width: 0, height: 0,
@@ -357,91 +385,59 @@
         let obstacles = [];
         let clouds = [];
 
-        // Ground position
-        let groundY = 0;
-
-        // Check orientation
-        function checkOrientation() {
-            screenWidth = window.innerWidth;
-            screenHeight = window.innerHeight;
-            isPortrait = screenHeight > screenWidth;
-        }
-
-        // Setup game dimensions based on orientation
+        // Setup dimensions
         function setupDimensions() {
-            checkOrientation();
+            W = window.innerWidth;
+            H = window.innerHeight;
             
-            canvas.width = screenWidth;
-            canvas.height = screenHeight;
+            canvas.width = W;
+            canvas.height = H;
 
-            if (isPortrait) {
-                // PORTRAIT: Use full screen height, ground at bottom 15%
-                groundY = screenHeight * 0.85;
-                
-                // Horse size relative to screen
-                horse.width = screenWidth * 0.22;
-                horse.height = horse.width * 0.75;
-                horse.x = screenWidth * 0.1;
-                horse.groundY = groundY - horse.height - 10;
-                
-                // Physics for portrait
-                horse.gravity = screenHeight * 0.0012;
-                horse.jumpForce = -screenHeight * 0.022;
-                
-            } else {
-                // LANDSCAPE: Fixed aspect ratio like original chrome dino
-                groundY = screenHeight * 0.85;
-                
-                // Horse size
-                horse.width = Math.min(screenWidth * 0.1, 80);
-                horse.height = horse.width * 0.75;
-                horse.x = screenWidth * 0.1;
-                horse.groundY = groundY - horse.height - 10;
-                
-                // Physics for landscape
-                horse.gravity = screenHeight * 0.0015;
-                horse.jumpForce = -screenHeight * 0.028;
-            }
-
-            // Keep horse on ground
+            groundY = H * 0.85;
+            
+            const refSize = Math.min(W, H);
+            horse.width = refSize * 0.15;
+            horse.height = horse.width * 0.75;
+            
+            horse.x = W * 0.08;
+            horse.groundY = groundY - horse.height - 5;
+            
             if (!horse.isJumping) {
                 horse.y = horse.groundY;
             }
+            
+            horse.gravity = H * 0.001;
+            horse.jumpForce = -H * 0.02;
+            
+            gameSpeed = Math.max(2, W * 0.004);
 
-            // Reset clouds
             clouds = [];
-            for (let i = 0; i < 4; i++) {
+            for (let i = 0; i < 5; i++) {
                 clouds.push({
-                    x: screenWidth * (i / 4) + Math.random() * 100,
-                    y: screenHeight * (0.1 + Math.random() * 0.15),
-                    size: Math.min(screenWidth, screenHeight) * (0.04 + Math.random() * 0.02)
+                    x: W * (i / 5) + Math.random() * (W * 0.15),
+                    y: H * (0.08 + Math.random() * 0.15),
+                    size: refSize * (0.03 + Math.random() * 0.02)
                 });
             }
-
-            // Adjust game speed
-            gameSpeed = isPortrait ? 3 : 4;
         }
 
         // Draw horse
         function drawHorse() {
             const x = horse.x;
             const y = horse.y;
-            const s = horse.height / 60; // Scale factor
+            const s = horse.height / 60;
             
             ctx.save();
             
-            // Body
             ctx.fillStyle = '#8B4513';
             ctx.beginPath();
             ctx.ellipse(x + 40*s, y + 25*s, 35*s, 20*s, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Head
             ctx.beginPath();
             ctx.ellipse(x + 75*s, y + 5*s, 18*s, 12*s, -0.3, 0, Math.PI * 2);
             ctx.fill();
             
-            // Neck
             ctx.beginPath();
             ctx.moveTo(x + 60*s, y + 10*s);
             ctx.quadraticCurveTo(x + 70*s, y + 20*s, x + 65*s, y + 30*s);
@@ -449,20 +445,17 @@
             ctx.quadraticCurveTo(x + 55*s, y + 15*s, x + 60*s, y + 10*s);
             ctx.fill();
             
-            // Ear
             ctx.beginPath();
             ctx.moveTo(x + 80*s, y - 5*s);
             ctx.lineTo(x + 85*s, y - 15*s);
             ctx.lineTo(x + 90*s, y - 3*s);
             ctx.fill();
             
-            // Eye
             ctx.fillStyle = '#000';
             ctx.beginPath();
             ctx.arc(x + 82*s, y + 3*s, 3*s, 0, Math.PI * 2);
             ctx.fill();
             
-            // Mane
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
             ctx.moveTo(x + 55*s, y);
@@ -472,7 +465,6 @@
             ctx.lineTo(x + 55*s, y + 15*s);
             ctx.fill();
             
-            // Legs
             ctx.fillStyle = '#8B4513';
             const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8 * s;
             
@@ -481,14 +473,12 @@
             ctx.fillRect(x + 15*s, y + 35*s, 8*s, 25*s - legOffset);
             ctx.fillRect(x + 25*s, y + 35*s, 8*s, 25*s + legOffset);
             
-            // Hooves
             ctx.fillStyle = '#2d1b0e';
             ctx.fillRect(x + 54*s, y + 58*s + legOffset, 10*s, 5*s);
             ctx.fillRect(x + 64*s, y + 58*s - legOffset, 10*s, 5*s);
             ctx.fillRect(x + 14*s, y + 58*s - legOffset, 10*s, 5*s);
             ctx.fillRect(x + 24*s, y + 58*s + legOffset, 10*s, 5*s);
             
-            // Tail
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
             ctx.moveTo(x + 5*s, y + 20*s);
@@ -507,7 +497,6 @@
             
             ctx.save();
             
-            // Mountain
             ctx.fillStyle = '#4a5568';
             ctx.beginPath();
             ctx.moveTo(x, groundY);
@@ -516,7 +505,6 @@
             ctx.closePath();
             ctx.fill();
             
-            // Snow cap
             ctx.fillStyle = '#FFFFFF';
             const snowH = height * 0.35;
             const snowW = width * 0.4;
@@ -530,7 +518,6 @@
             ctx.closePath();
             ctx.fill();
             
-            // Shading
             ctx.fillStyle = 'rgba(0,0,0,0.1)';
             ctx.beginPath();
             ctx.moveTo(x + width/2, groundY - height);
@@ -559,9 +546,9 @@
             ctx.save();
             ctx.globalAlpha = 0.25;
             
-            const fw = screenWidth * 0.35;
-            const fh = screenHeight * 0.4;
-            const fx = screenWidth * 0.55;
+            const fw = W * 0.3;
+            const fh = H * 0.45;
+            const fx = W * 0.6;
             
             ctx.fillStyle = '#6b7280';
             ctx.beginPath();
@@ -571,7 +558,6 @@
             ctx.closePath();
             ctx.fill();
             
-            // Snow
             ctx.fillStyle = '#FFFFFF';
             const sh = fh * 0.25;
             ctx.beginPath();
@@ -587,22 +573,22 @@
         // Draw ground
         function drawGround() {
             ctx.fillStyle = '#228B22';
-            ctx.fillRect(0, groundY, screenWidth, screenHeight - groundY);
+            ctx.fillRect(0, groundY, W, H - groundY);
             
             ctx.strokeStyle = '#1a6b1a';
             ctx.lineWidth = 3;
             ctx.beginPath();
             ctx.moveTo(0, groundY);
-            ctx.lineTo(screenWidth, groundY);
+            ctx.lineTo(W, groundY);
             ctx.stroke();
             
             ctx.strokeStyle = '#2d8f2d';
             ctx.lineWidth = 2;
-            const spacing = Math.max(20, screenWidth / 40);
-            for (let i = 0; i < screenWidth; i += spacing) {
+            const spacing = Math.max(15, W / 50);
+            for (let i = 0; i < W; i += spacing) {
                 ctx.beginPath();
                 ctx.moveTo(i, groundY);
-                ctx.lineTo(i + 4, groundY - 8);
+                ctx.lineTo(i + 3, groundY - 8);
                 ctx.stroke();
             }
         }
@@ -614,12 +600,11 @@
             gradient.addColorStop(0.7, '#B0E0E6');
             gradient.addColorStop(1, '#98D8C8');
             ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, screenWidth, groundY);
+            ctx.fillRect(0, 0, W, groundY);
         }
 
         // Update game
         function update() {
-            // Horse physics
             if (horse.isJumping || horse.y < horse.groundY) {
                 horse.velocityY += horse.gravity;
                 horse.y += horse.velocityY;
@@ -635,69 +620,64 @@
                 horse.legPhase += 0.25;
             }
             
-            // Update obstacles
             obstacles.forEach(obs => {
                 obs.x -= gameSpeed;
             });
             
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
             
-            // Spawn obstacles - EASY difficulty
-            const minGap = isPortrait ? screenWidth * 0.6 : screenWidth * 0.4;
-            const maxGap = isPortrait ? screenWidth * 0.9 : screenWidth * 0.6;
+            const minGap = W * 0.5;
+            const maxGap = W * 0.8;
             const lastObs = obstacles[obstacles.length - 1];
             
-            if (!lastObs || lastObs.x < screenWidth - minGap - Math.random() * (maxGap - minGap)) {
-                const baseSize = isPortrait ? screenWidth * 0.12 : screenWidth * 0.06;
-                const sizeVar = 0.6 + Math.random() * 0.3;
+            if (!lastObs || lastObs.x < W - minGap - Math.random() * (maxGap - minGap)) {
+                const refSize = Math.min(W, H);
+                const baseSize = refSize * 0.08;
+                const sizeVar = 0.6 + Math.random() * 0.35;
                 obstacles.push({
-                    x: screenWidth + 20,
+                    x: W + 20,
                     width: baseSize * sizeVar,
-                    height: baseSize * sizeVar * 0.9
+                    height: baseSize * sizeVar * 0.85
                 });
             }
             
-            // Update clouds
             clouds.forEach(c => {
-                c.x -= gameSpeed * 0.2;
+                c.x -= gameSpeed * 0.15;
                 if (c.x + c.size * 2 < 0) {
-                    c.x = screenWidth + c.size;
+                    c.x = W + c.size;
                 }
             });
             
-            // Collision - generous hitbox
             const hb = {
                 x: horse.x + horse.width * 0.2,
                 y: horse.y + horse.height * 0.15,
-                w: horse.width * 0.55,
-                h: horse.height * 0.65
+                w: horse.width * 0.5,
+                h: horse.height * 0.6
             };
             
             for (const obs of obstacles) {
                 const obsTop = groundY - obs.height;
-                if (hb.x < obs.x + obs.width * 0.75 &&
-                    hb.x + hb.w > obs.x + obs.width * 0.25 &&
-                    hb.y + hb.h > obsTop + obs.height * 0.15) {
+                if (hb.x < obs.x + obs.width * 0.7 &&
+                    hb.x + hb.w > obs.x + obs.width * 0.3 &&
+                    hb.y + hb.h > obsTop + obs.height * 0.1) {
                     gameOver();
                     return;
                 }
             }
             
-            // Score
             score++;
             document.getElementById('current-score').textContent = Math.floor(score / 10);
             
-            // Speed increase - very gradual
-            const maxSpeed = isPortrait ? 6 : 8;
-            if (score % 1000 === 0 && gameSpeed < maxSpeed) {
-                gameSpeed += 0.2;
+            const maxSpeed = W * 0.008;
+            if (score % 1200 === 0 && gameSpeed < maxSpeed) {
+                gameSpeed += W * 0.0003;
             }
         }
 
         // Draw
         function draw() {
             ctx.fillStyle = '#87CEEB';
-            ctx.fillRect(0, 0, screenWidth, screenHeight);
+            ctx.fillRect(0, 0, W, H);
             
             drawSky();
             drawBackgroundFuji();
@@ -725,10 +705,11 @@
 
         // Start game
         function startGame() {
+            document.getElementById('mobilePrompt').classList.add('hidden');
             setupDimensions();
             gameRunning = true;
             score = 0;
-            gameSpeed = isPortrait ? 3 : 4;
+            gameSpeed = Math.max(2, W * 0.003);
             obstacles = [];
             horse.y = horse.groundY;
             horse.velocityY = 0;
@@ -762,19 +743,21 @@
                 `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(gameUrl)}&text=${encodeURIComponent(shareText)}`;
         }
 
-        // Fullscreen
-        function requestFullscreen() {
-            const elem = document.documentElement;
-            if (elem.requestFullscreen) return elem.requestFullscreen();
-            if (elem.webkitRequestFullscreen) return elem.webkitRequestFullscreen();
-            return Promise.reject();
-        }
-
+        // Fullscreen (for Android/PC)
         function toggleFullscreen() {
+            const elem = document.documentElement;
             if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                requestFullscreen().catch(() => {});
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                }
             } else {
-                (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                }
             }
         }
 
@@ -783,18 +766,47 @@
             document.getElementById('fullscreenText').textContent = fs ? '縮小' : '全画面';
         }
 
-        function enterFullscreenAndStart() {
-            document.getElementById('tapFullscreen').classList.add('hidden');
-            requestFullscreen().then(() => {
-                setTimeout(() => { setupDimensions(); draw(); }, 100);
-            }).catch(() => { setupDimensions(); draw(); });
+        // Show mobile prompt
+        function showMobilePrompt() {
+            const prompt = document.getElementById('mobilePrompt');
+            const content = document.getElementById('promptContent');
+            const startBtn = document.getElementById('promptStartBtn');
+            const skipLink = document.getElementById('promptSkip');
+
+            if (isStandalone) {
+                // Already in standalone/fullscreen mode
+                return;
+            }
+
+            if (isIOS) {
+                content.innerHTML = `
+                    <p>全画面で遊ぶには：</p>
+                    <div class="highlight">
+                        <strong>① 下の共有ボタン</strong> <span style="font-size:18px">⬆️</span> をタップ<br>
+                        <strong>②「ホーム画面に追加」</strong>を選択
+                    </div>
+                    <p style="font-size:12px; opacity:0.7;">ホーム画面から起動すると<br>全画面でプレイできます</p>
+                `;
+                skipLink.textContent = 'このまま遊ぶ';
+                skipLink.onclick = () => prompt.classList.add('hidden');
+                startBtn.textContent = 'このまま開始';
+                startBtn.onclick = startGame;
+            } else if (isAndroid) {
+                content.innerHTML = `<p>全画面モードでプレイ！</p>`;
+                startBtn.textContent = '全画面で開始';
+                startBtn.onclick = () => {
+                    prompt.classList.add('hidden');
+                    toggleFullscreen();
+                    setTimeout(startGame, 300);
+                };
+                skipLink.textContent = '通常モードで遊ぶ';
+                skipLink.onclick = startGame;
+            }
+
+            prompt.classList.remove('hidden');
         }
 
-        function skipFullscreen() {
-            document.getElementById('tapFullscreen').classList.add('hidden');
-        }
-
-        // Event listeners
+        // Events
         window.addEventListener('resize', () => {
             setupDimensions();
             if (!gameRunning) draw();
@@ -837,8 +849,9 @@
         // Init
         setupDimensions();
         draw();
-        if (isMobile) {
-            document.getElementById('tapFullscreen').classList.remove('hidden');
+        
+        if (isMobile && !isStandalone) {
+            showMobilePrompt();
         }
     </script>
 </body>
