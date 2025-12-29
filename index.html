@@ -44,7 +44,7 @@
             <h1>馬ジャンプゲーム</h1>
             <p>一富士二鷹三茄子を飛び越えろ！</p>
             <button class="start-btn" onclick="startGame()">ゲームスタート</button>
-            <div class="instructions"><strong>操作:</strong> タップ/スペース でジャンプ<br><strong>2回連続タップで2段ジャンプ！</strong><br><div class="score-info"><span>🍆茄子 +1</span><span>🗻富士 +3</span><span>🦅鷹 +5 (2段ジャンプ)</span></div></div>
+            <div class="instructions"><strong>操作:</strong> タップ/スペース でジャンプ<br><strong>連続タップで多段ジャンプ！（最大3段）</strong><br><div class="score-info"><span>🍆茄子 +1</span><span>🗻富士 +3</span><span>🦅鷹 +5 (3段ジャンプ)</span></div></div>
         </div>
         <div class="overlay hidden" id="gameOverOverlay">
             <div class="emoji">💥</div>
@@ -64,7 +64,7 @@
         let gameSpeed = 3, baseSpeed = 3, animationId, frameCount = 0;
         let fujiCount = 0, hawkCount = 0, eggplantCount = 0;
         document.getElementById('high-score').textContent = highScore;
-        const horse = { x: 0, y: 0, width: 0, height: 0, velocityY: 0, gravity: 0, jumpForce: 0, isJumping: false, canDoubleJump: true, hasDoubleJumped: false, groundY: 0, legPhase: 0 };
+        const horse = { x: 0, y: 0, width: 0, height: 0, velocityY: 0, gravity: 0, jumpForce: 0, isJumping: false, jumpCount: 0, maxJumps: 3, groundY: 0, legPhase: 0 };
         let obstacles = [], clouds = [];
         const OBSTACLE_SIZES = { EGGPLANT: { width: 0.035, height: 0.05 }, FUJI: { width: 0.16, height: 0.18 }, HAWK: { width: 0.10, height: 0.05 } };
         const OBSTACLE_TYPES = { EGGPLANT: { type: 'eggplant', score: 1, minSpeed: 0 }, FUJI: { type: 'fuji', score: 3, minSpeed: 0 }, HAWK: { type: 'hawk', score: 5, minSpeed: 4 } };
@@ -124,18 +124,70 @@
             ctx.restore();
         }
 
+        // Eggplant emoji style 🍆
         function drawEggplant(obs) {
             const x = obs.x, h = obs.height, w = obs.width, cx = x + w / 2;
             ctx.save();
-            const g = ctx.createRadialGradient(cx - w * 0.2, groundY - h * 0.6, 0, cx, groundY - h * 0.5, h * 0.8);
-            g.addColorStop(0, '#9932CC'); g.addColorStop(0.3, '#6B238E'); g.addColorStop(0.6, '#4B0082'); g.addColorStop(1, '#2E0854');
-            ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx, groundY - 2);
-            ctx.bezierCurveTo(x - w * 0.4, groundY - h * 0.3, x - w * 0.2, groundY - h * 0.8, cx, groundY - h * 0.95);
-            ctx.bezierCurveTo(x + w * 1.2, groundY - h * 0.8, x + w * 1.4, groundY - h * 0.3, cx, groundY - 2); ctx.fill();
-            ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.ellipse(cx - w * 0.2, groundY - h * 0.6, w * 0.12, h * 0.2, -0.4, 0, Math.PI * 2); ctx.fill();
-            const cy = groundY - h * 0.88; ctx.fillStyle = '#2E8B2E';
-            for (let i = 0; i < 4; i++) { const a = (i * Math.PI / 2) + Math.PI / 4, ll = w * 0.35; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.quadraticCurveTo(cx + Math.cos(a) * ll * 0.5, cy + Math.sin(a) * ll * 0.3 - ll * 0.2, cx + Math.cos(a) * ll * 0.6, cy + Math.sin(a) * ll * 0.4); ctx.quadraticCurveTo(cx + Math.cos(a) * ll * 0.3, cy + Math.sin(a) * ll * 0.2, cx, cy); ctx.fill(); }
-            ctx.fillStyle = '#228B22'; ctx.beginPath(); ctx.moveTo(cx - w * 0.08, cy + h * 0.05); ctx.lineTo(cx - w * 0.05, groundY - h * 1.05); ctx.lineTo(cx + w * 0.05, groundY - h * 1.05); ctx.lineTo(cx + w * 0.08, cy + h * 0.05); ctx.closePath(); ctx.fill();
+            
+            // Main body - tilted egg shape like emoji
+            const bodyTop = groundY - h * 0.85;
+            const bodyBottom = groundY - h * 0.05;
+            
+            // Purple gradient
+            const g = ctx.createLinearGradient(x - w * 0.2, bodyTop, x + w * 1.2, bodyBottom);
+            g.addColorStop(0, '#5B2C6F');
+            g.addColorStop(0.3, '#7D3C98');
+            g.addColorStop(0.5, '#8E44AD');
+            g.addColorStop(0.7, '#7D3C98');
+            g.addColorStop(1, '#4A235A');
+            
+            ctx.fillStyle = g;
+            ctx.beginPath();
+            // Tilted oval/egg shape - fatter at bottom, narrower at top
+            ctx.moveTo(cx, bodyBottom);
+            // Right side - bulge out
+            ctx.bezierCurveTo(
+                x + w * 1.3, bodyBottom - h * 0.15,
+                x + w * 1.1, bodyTop + h * 0.3,
+                cx + w * 0.15, bodyTop
+            );
+            // Left side - curve back
+            ctx.bezierCurveTo(
+                x - w * 0.1, bodyTop + h * 0.3,
+                x - w * 0.3, bodyBottom - h * 0.15,
+                cx, bodyBottom
+            );
+            ctx.fill();
+            
+            // Highlight - glossy shine
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(cx - w * 0.15, groundY - h * 0.5, w * 0.15, h * 0.22, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Green calyx/stem cap
+            ctx.fillStyle = '#1E8449';
+            const stemY = bodyTop - h * 0.02;
+            
+            // Star-shaped calyx
+            ctx.beginPath();
+            ctx.moveTo(cx + w * 0.15, stemY + h * 0.08);
+            ctx.quadraticCurveTo(cx + w * 0.35, stemY - h * 0.05, cx + w * 0.25, stemY - h * 0.12);
+            ctx.quadraticCurveTo(cx + w * 0.1, stemY + h * 0.02, cx, stemY - h * 0.05);
+            ctx.quadraticCurveTo(cx - w * 0.1, stemY + h * 0.02, cx - w * 0.25, stemY - h * 0.12);
+            ctx.quadraticCurveTo(cx - w * 0.35, stemY - h * 0.05, cx - w * 0.15, stemY + h * 0.08);
+            ctx.quadraticCurveTo(cx, stemY + h * 0.12, cx + w * 0.15, stemY + h * 0.08);
+            ctx.fill();
+            
+            // Stem
+            ctx.fillStyle = '#145A32';
+            ctx.beginPath();
+            ctx.moveTo(cx - w * 0.06, stemY - h * 0.02);
+            ctx.lineTo(cx - w * 0.04, stemY - h * 0.18);
+            ctx.lineTo(cx + w * 0.04, stemY - h * 0.18);
+            ctx.lineTo(cx + w * 0.06, stemY - h * 0.02);
+            ctx.fill();
+            
             ctx.restore();
         }
 
@@ -150,7 +202,7 @@
 
         function update() {
             frameCount++;
-            if (horse.isJumping || horse.y < horse.groundY) { horse.velocityY += horse.gravity; horse.y += horse.velocityY; if (horse.y >= horse.groundY) { horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.canDoubleJump = true; horse.hasDoubleJumped = false; } }
+            if (horse.isJumping || horse.y < horse.groundY) { horse.velocityY += horse.gravity; horse.y += horse.velocityY; if (horse.y >= horse.groundY) { horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.jumpCount = 0; } }
             if (!horse.isJumping) horse.legPhase += 0.25;
             obstacles.forEach(obs => { obs.x -= gameSpeed; if (!obs.passed && obs.x + obs.width < horse.x) { obs.passed = true; score += obs.score; if (obs.type === 'fuji') fujiCount++; else if (obs.type === 'hawk') hawkCount++; else eggplantCount++; } });
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
@@ -165,8 +217,22 @@
 
         function draw() { drawSky(); drawBackgroundFuji(); drawClouds(); drawGround(); obstacles.forEach(obs => drawObstacle(obs)); drawHorse(); }
         function gameLoop() { if (!gameRunning) return; update(); draw(); animationId = requestAnimationFrame(gameLoop); }
-        function jump() { if (!horse.isJumping && horse.y >= horse.groundY - 5) { horse.isJumping = true; horse.velocityY = horse.jumpForce; horse.canDoubleJump = true; horse.hasDoubleJumped = false; } else if (horse.isJumping && horse.canDoubleJump && !horse.hasDoubleJumped) { horse.velocityY = horse.jumpForce; horse.hasDoubleJumped = true; horse.canDoubleJump = false; } }
-        function startGame() { setupDimensions(); gameRunning = true; score = 0; frameCount = 0; fujiCount = 0; hawkCount = 0; eggplantCount = 0; gameSpeed = baseSpeed; obstacles = []; horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.canDoubleJump = true; horse.hasDoubleJumped = false; document.getElementById('startOverlay').classList.add('hidden'); document.getElementById('gameOverOverlay').classList.add('hidden'); gameLoop(); }
+        
+        // Triple jump support
+        function jump() {
+            if (!horse.isJumping && horse.y >= horse.groundY - 5) {
+                // First jump from ground
+                horse.isJumping = true;
+                horse.velocityY = horse.jumpForce;
+                horse.jumpCount = 1;
+            } else if (horse.isJumping && horse.jumpCount < horse.maxJumps) {
+                // Additional jumps in air (2nd or 3rd)
+                horse.velocityY = horse.jumpForce;
+                horse.jumpCount++;
+            }
+        }
+        
+        function startGame() { setupDimensions(); gameRunning = true; score = 0; frameCount = 0; fujiCount = 0; hawkCount = 0; eggplantCount = 0; gameSpeed = baseSpeed; obstacles = []; horse.y = horse.groundY; horse.velocityY = 0; horse.isJumping = false; horse.jumpCount = 0; document.getElementById('startOverlay').classList.add('hidden'); document.getElementById('gameOverOverlay').classList.add('hidden'); gameLoop(); }
         function gameOver() { gameRunning = false; cancelAnimationFrame(animationId); if (score > highScore) { highScore = score; localStorage.setItem('horseGameHighScore', highScore); } document.getElementById('high-score').textContent = highScore; document.getElementById('final-score').textContent = score; document.getElementById('final-high-score').textContent = highScore; document.getElementById('obstacle-stats').textContent = '🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount; document.getElementById('gameOverOverlay').classList.remove('hidden'); const st = '🐴馬ジャンプゲーム\nスコア: ' + score + '点！\n🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount + '\n'; document.getElementById('lineShareBtn').href = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(window.location.href) + '&text=' + encodeURIComponent(st); }
         function toggleFullscreen() { const el = document.documentElement; if (!document.fullscreenElement) { if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } else { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } }
 
