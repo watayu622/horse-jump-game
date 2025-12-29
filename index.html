@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>馬ジャンプゲーム 🐴🗻</title>
+    
+    <!-- OGP tags for LINE/SNS sharing -->
+    <meta property="og:title" content="馬ジャンプゲーム 🐴🗻">
+    <meta property="og:description" content="富士山を飛び越えて走り続けろ！スペース/タップでジャンプ！">
+    <meta property="og:type" content="website">
+    <!-- ↓ホスティング後、実際のURLに変更してください（例: https://username.github.io/horse-jump-game/） -->
+    <meta property="og:url" content="https://YOUR_USERNAME.github.io/horse-jump-game/">
+    <!-- ↓OGP画像のURL -->
+    <meta property="og:image" content="https://YOUR_USERNAME.github.io/horse-jump-game/ogp.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="馬ジャンプゲーム 🐴🗻">
+    <meta name="twitter:description" content="富士山を飛び越えて走り続けろ！">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87CEEB 0%, #E0F6FF 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .game-container {
+            position: relative;
+            width: 800px;
+            max-width: 95vw;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px 10px 0 0;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        canvas {
+            display: block;
+            background: linear-gradient(to bottom, 
+                #87CEEB 0%, 
+                #B0E0E6 60%, 
+                #90EE90 60%, 
+                #228B22 100%
+            );
+            border-radius: 0 0 10px 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .overlay.hidden {
+            display: none;
+        }
+
+        .overlay h1 {
+            font-size: 28px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .overlay p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        .overlay .emoji {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .start-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 10px;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .high-score {
+            color: #e74c3c;
+        }
+
+        .share-section {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ddd;
+        }
+
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            font-size: 14px;
+            background: #06C755;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            text-decoration: none;
+        }
+
+        .share-btn:hover {
+            transform: scale(1.05);
+            background: #05a847;
+        }
+
+        .share-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .overlay {
+                padding: 25px;
+                width: 90%;
+            }
+            .overlay h1 {
+                font-size: 22px;
+            }
+            .overlay .emoji {
+                font-size: 45px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="score-board">
+            <span>スコア: <span id="current-score">0</span></span>
+            <span>ハイスコア: <span id="high-score" class="high-score">0</span></span>
+        </div>
+        <canvas id="gameCanvas" width="800" height="400"></canvas>
+        
+        <div class="overlay" id="startOverlay">
+            <div class="emoji">🐴🗻</div>
+            <h1>馬ジャンプゲーム</h1>
+            <p>富士山を飛び越えて走り続けよう！</p>
+            <button class="start-btn" onclick="startGame()">ゲームスタート</button>
+            <div class="instructions">
+                <strong>操作方法:</strong><br>
+                スペースキー / クリック / タップ でジャンプ
+            </div>
+        </div>
+
+        <div class="overlay hidden" id="gameOverOverlay">
+            <div class="emoji">💥</div>
+            <h1>ゲームオーバー</h1>
+            <p>スコア: <span id="final-score">0</span></p>
+            <p>ハイスコア: <span id="final-high-score">0</span></p>
+            <button class="start-btn" onclick="startGame()">もう一度</button>
+            
+            <div class="share-section">
+                <a class="share-btn" id="lineShareBtn" href="#" target="_blank">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.629-.63.629h-2.386c-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63h2.386c.349 0 .63.285.63.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.51.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.63-.63.346 0 .628.285.628.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/>
+                    </svg>
+                    LINEでシェア
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game state
+        let gameRunning = false;
+        let score = 0;
+        let highScore = localStorage.getItem('horseGameHighScore') || 0;
+        let gameSpeed = 6;
+        let animationId;
+
+        // Update high score display
+        document.getElementById('high-score').textContent = highScore;
+
+        // Horse
+        const horse = {
+            x: 80,
+            y: 280,
+            width: 80,
+            height: 60,
+            velocityY: 0,
+            gravity: 0.8,
+            jumpForce: -15,
+            isJumping: false,
+            groundY: 280,
+            legPhase: 0
+        };
+
+        // Obstacles (Fuji mountains)
+        let obstacles = [];
+
+        // Clouds
+        let clouds = [
+            { x: 100, y: 50, size: 40 },
+            { x: 300, y: 80, size: 30 },
+            { x: 550, y: 40, size: 50 },
+            { x: 700, y: 70, size: 35 }
+        ];
+
+        // Draw horse
+        function drawHorse() {
+            const x = horse.x;
+            const y = horse.y;
+            
+            ctx.save();
+            
+            // Body
+            ctx.fillStyle = '#8B4513';
+            ctx.beginPath();
+            ctx.ellipse(x + 40, y + 25, 35, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Head
+            ctx.beginPath();
+            ctx.ellipse(x + 75, y + 5, 18, 12, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Neck
+            ctx.beginPath();
+            ctx.moveTo(x + 60, y + 10);
+            ctx.quadraticCurveTo(x + 70, y + 20, x + 65, y + 30);
+            ctx.lineTo(x + 55, y + 25);
+            ctx.quadraticCurveTo(x + 55, y + 15, x + 60, y + 10);
+            ctx.fill();
+            
+            // Ear
+            ctx.beginPath();
+            ctx.moveTo(x + 80, y - 5);
+            ctx.lineTo(x + 85, y - 15);
+            ctx.lineTo(x + 90, y - 3);
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(x + 82, y + 3, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mane
+            ctx.fillStyle = '#4a2c0a';
+            ctx.beginPath();
+            ctx.moveTo(x + 55, y);
+            ctx.quadraticCurveTo(x + 45, y - 10, x + 50, y + 5);
+            ctx.quadraticCurveTo(x + 40, y - 5, x + 45, y + 10);
+            ctx.quadraticCurveTo(x + 35, y, x + 40, y + 15);
+            ctx.lineTo(x + 55, y + 15);
+            ctx.fill();
+            
+            // Legs with animation
+            ctx.fillStyle = '#8B4513';
+            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8;
+            
+            // Front legs
+            ctx.fillRect(x + 55, y + 35, 8, 25 + legOffset);
+            ctx.fillRect(x + 65, y + 35, 8, 25 - legOffset);
+            
+            // Back legs
+            ctx.fillRect(x + 15, y + 35, 8, 25 - legOffset);
+            ctx.fillRect(x + 25, y + 35, 8, 25 + legOffset);
+            
+            // Hooves
+            ctx.fillStyle = '#2d1b0e';
+            ctx.fillRect(x + 54, y + 58 + legOffset, 10, 5);
+            ctx.fillRect(x + 64, y + 58 - legOffset, 10, 5);
+            ctx.fillRect(x + 14, y + 58 - legOffset, 10, 5);
+            ctx.fillRect(x + 24, y + 58 + legOffset, 10, 5);
+            
+            // Tail
+            ctx.fillStyle = '#4a2c0a';
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y + 20);
+            ctx.quadraticCurveTo(x - 15, y + 35, x - 10, y + 50);
+            ctx.quadraticCurveTo(x - 5, y + 45, x + 5, y + 35);
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // Draw Mt. Fuji obstacle
+        function drawFuji(obstacle) {
+            const x = obstacle.x;
+            const baseY = 340;
+            const height = obstacle.height;
+            const width = obstacle.width;
+            
+            ctx.save();
+            
+            // Mountain body (blue-ish gray)
+            ctx.fillStyle = '#4a5568';
+            ctx.beginPath();
+            ctx.moveTo(x, baseY);
+            ctx.lineTo(x + width / 2, baseY - height);
+            ctx.lineTo(x + width, baseY);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Snow cap
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            const snowHeight = height * 0.35;
+            const snowWidth = width * 0.4;
+            ctx.moveTo(x + width / 2 - snowWidth / 2, baseY - height + snowHeight);
+            ctx.lineTo(x + width / 2, baseY - height);
+            ctx.lineTo(x + width / 2 + snowWidth / 2, baseY - height + snowHeight);
+            // Jagged snow line
+            ctx.lineTo(x + width / 2 + snowWidth / 3, baseY - height + snowHeight + 5);
+            ctx.lineTo(x + width / 2 + snowWidth / 6, baseY - height + snowHeight);
+            ctx.lineTo(x + width / 2, baseY - height + snowHeight + 8);
+            ctx.lineTo(x + width / 2 - snowWidth / 6, baseY - height + snowHeight);
+            ctx.lineTo(x + width / 2 - snowWidth / 3, baseY - height + snowHeight + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Add some shading
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            ctx.beginPath();
+            ctx.moveTo(x + width / 2, baseY - height);
+            ctx.lineTo(x + width, baseY);
+            ctx.lineTo(x + width / 2, baseY);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // Draw clouds
+        function drawClouds() {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            clouds.forEach(cloud => {
+                ctx.beginPath();
+                ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.size * 0.8, cloud.y - cloud.size * 0.2, cloud.size * 0.7, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.size * 1.5, cloud.y, cloud.size * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Draw ground
+        function drawGround() {
+            // Grass
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, 340, canvas.width, 60);
+            
+            // Ground line
+            ctx.strokeStyle = '#1a6b1a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, 340);
+            ctx.lineTo(canvas.width, 340);
+            ctx.stroke();
+            
+            // Some grass details
+            ctx.strokeStyle = '#2d8f2d';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < canvas.width; i += 30) {
+                ctx.beginPath();
+                ctx.moveTo(i, 340);
+                ctx.lineTo(i + 5, 330);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(i + 15, 340);
+                ctx.lineTo(i + 12, 333);
+                ctx.stroke();
+            }
+        }
+
+        // Draw background Mt. Fuji
+        function drawBackgroundFuji() {
+            ctx.save();
+            ctx.globalAlpha = 0.3;
+            
+            // Large background Fuji
+            ctx.fillStyle = '#6b7280';
+            ctx.beginPath();
+            ctx.moveTo(400, 340);
+            ctx.lineTo(550, 100);
+            ctx.lineTo(700, 340);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Snow cap
+            ctx.fillStyle = '#FFFFFF';
+            ctx.beginPath();
+            ctx.moveTo(510, 160);
+            ctx.lineTo(550, 100);
+            ctx.lineTo(590, 160);
+            ctx.lineTo(570, 165);
+            ctx.lineTo(550, 155);
+            ctx.lineTo(530, 165);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.restore();
+        }
+
+        // Update game
+        function update() {
+            // Update horse
+            if (horse.isJumping || horse.y < horse.groundY) {
+                horse.velocityY += horse.gravity;
+                horse.y += horse.velocityY;
+                
+                if (horse.y >= horse.groundY) {
+                    horse.y = horse.groundY;
+                    horse.velocityY = 0;
+                    horse.isJumping = false;
+                }
+            }
+            
+            // Animate legs
+            if (!horse.isJumping) {
+                horse.legPhase += 0.3;
+            }
+            
+            // Update obstacles
+            obstacles.forEach(obs => {
+                obs.x -= gameSpeed;
+            });
+            
+            // Remove off-screen obstacles
+            obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
+            
+            // Spawn new obstacles
+            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < canvas.width - 300 - Math.random() * 200) {
+                const size = 0.7 + Math.random() * 0.5;
+                obstacles.push({
+                    x: canvas.width + 50,
+                    width: 80 * size,
+                    height: 70 * size
+                });
+            }
+            
+            // Update clouds
+            clouds.forEach(cloud => {
+                cloud.x -= gameSpeed * 0.3;
+                if (cloud.x + cloud.size * 2 < 0) {
+                    cloud.x = canvas.width + cloud.size;
+                }
+            });
+            
+            // Check collision
+            obstacles.forEach(obs => {
+                // Hitbox for horse (smaller than visual)
+                const horseHitbox = {
+                    x: horse.x + 15,
+                    y: horse.y + 10,
+                    width: 55,
+                    height: 45
+                };
+                
+                // Simple box collision for main body
+                if (horseHitbox.x < obs.x + obs.width - 15 &&
+                    horseHitbox.x + horseHitbox.width > obs.x + 15 &&
+                    horseHitbox.y + horseHitbox.height > 340 - obs.height + 20) {
+                    gameOver();
+                }
+            });
+            
+            // Update score
+            score++;
+            document.getElementById('current-score').textContent = Math.floor(score / 10);
+            
+            // Increase speed gradually
+            if (score % 500 === 0 && gameSpeed < 15) {
+                gameSpeed += 0.5;
+            }
+        }
+
+        // Draw everything
+        function draw() {
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(0.6, '#B0E0E6');
+            gradient.addColorStop(0.6, '#90EE90');
+            gradient.addColorStop(1, '#228B22');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw elements
+            drawBackgroundFuji();
+            drawClouds();
+            drawGround();
+            
+            // Draw obstacles
+            obstacles.forEach(obs => drawFuji(obs));
+            
+            // Draw horse
+            drawHorse();
+        }
+
+        // Game loop
+        function gameLoop() {
+            if (!gameRunning) return;
+            
+            update();
+            draw();
+            
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        // Jump
+        function jump() {
+            if (!horse.isJumping && horse.y >= horse.groundY) {
+                horse.isJumping = true;
+                horse.velocityY = horse.jumpForce;
+            }
+        }
+
+        // Start game
+        function startGame() {
+            gameRunning = true;
+            score = 0;
+            gameSpeed = 6;
+            obstacles = [];
+            horse.y = horse.groundY;
+            horse.velocityY = 0;
+            horse.isJumping = false;
+            
+            document.getElementById('startOverlay').classList.add('hidden');
+            document.getElementById('gameOverOverlay').classList.add('hidden');
+            
+            gameLoop();
+        }
+
+        // Game over
+        function gameOver() {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            
+            const finalScore = Math.floor(score / 10);
+            if (finalScore > highScore) {
+                highScore = finalScore;
+                localStorage.setItem('horseGameHighScore', highScore);
+            }
+            
+            document.getElementById('high-score').textContent = highScore;
+            document.getElementById('final-score').textContent = finalScore;
+            document.getElementById('final-high-score').textContent = highScore;
+            document.getElementById('gameOverOverlay').classList.remove('hidden');
+            
+            // Update LINE share button
+            updateShareButton(finalScore);
+        }
+
+        // Update LINE share button with score
+        function updateShareButton(finalScore) {
+            const gameUrl = window.location.href;
+            const shareText = `🐴馬ジャンプゲーム🗻\nスコア: ${finalScore}点！\n富士山を飛び越えろ！\n`;
+            const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(gameUrl)}&text=${encodeURIComponent(shareText)}`;
+            document.getElementById('lineShareBtn').href = lineShareUrl;
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (gameRunning) {
+                    jump();
+                } else {
+                    startGame();
+                }
+            }
+        });
+
+        canvas.addEventListener('click', () => {
+            if (gameRunning) {
+                jump();
+            }
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if (gameRunning) {
+                jump();
+            }
+        });
+
+        // Initial draw
+        draw();
+    </script>
+</body>
+</html>
