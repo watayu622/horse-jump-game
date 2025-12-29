@@ -2,26 +2,22 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>馬ジャンプゲーム 🐴🗻</title>
     
     <!-- OGP tags for LINE/SNS sharing -->
     <meta property="og:title" content="馬ジャンプゲーム 🐴🗻">
     <meta property="og:description" content="富士山を飛び越えて走り続けろ！スペース/タップでジャンプ！">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://watayu622.github.io/horse-jump-game/">
-    <meta property="og:image" content="https://watayu622.github.io/horse-jump-game/ogp.png">
+    <meta property="og:url" content="https://YOUR_USERNAME.github.io/horse-jump-game/">
+    <meta property="og:image" content="https://YOUR_USERNAME.github.io/horse-jump-game/ogp.png">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="馬ジャンプゲーム 🐴🗻">
-    <meta name="twitter:description" content="富士山を飛び越えて走り続けろ！">
     
     <!-- Fullscreen support -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
     <style>
         * {
@@ -34,14 +30,17 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: #1a1a2e;
+            background: #228B22;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             touch-action: manipulation;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         #gameCanvas {
             display: block;
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -49,29 +48,30 @@
         }
 
         .ui-layer {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
+            z-index: 10;
         }
 
         .score-board {
             position: absolute;
-            top: 15px;
+            top: max(10px, env(safe-area-inset-top, 10px));
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 30px;
-            padding: 10px 25px;
+            gap: 20px;
+            padding: 8px 20px;
             background: rgba(255, 255, 255, 0.9);
             border-radius: 25px;
-            font-size: clamp(14px, 3vw, 20px);
+            font-size: 16px;
             font-weight: bold;
             color: #333;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-            z-index: 100;
+            white-space: nowrap;
         }
 
         .high-score {
@@ -85,14 +85,13 @@
             transform: translate(-50%, -50%);
             text-align: center;
             background: rgba(255, 255, 255, 0.95);
-            padding: clamp(20px, 5vw, 40px);
+            padding: 30px;
             border-radius: 20px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             z-index: 200;
             pointer-events: auto;
             max-width: 90vw;
-            max-height: 90vh;
-            overflow-y: auto;
+            width: 320px;
         }
 
         .overlay.hidden {
@@ -100,32 +99,32 @@
         }
 
         .overlay h1 {
-            font-size: clamp(24px, 5vw, 36px);
-            margin-bottom: 15px;
+            font-size: 24px;
+            margin-bottom: 12px;
             color: #333;
         }
 
         .overlay p {
-            font-size: clamp(14px, 3vw, 18px);
-            margin-bottom: 12px;
+            font-size: 16px;
+            margin-bottom: 10px;
             color: #666;
         }
 
         .overlay .emoji {
-            font-size: clamp(40px, 10vw, 70px);
-            margin-bottom: 15px;
+            font-size: 50px;
+            margin-bottom: 12px;
         }
 
         .start-btn {
-            padding: clamp(12px, 3vw, 18px) clamp(30px, 8vw, 50px);
-            font-size: clamp(16px, 4vw, 22px);
+            padding: 14px 40px;
+            font-size: 18px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
             border-radius: 30px;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            margin-top: 8px;
             -webkit-tap-highlight-color: transparent;
         }
 
@@ -139,17 +138,17 @@
         }
 
         .instructions {
-            margin-top: 15px;
-            padding: 12px;
+            margin-top: 12px;
+            padding: 10px;
             background: #f0f0f0;
             border-radius: 10px;
-            font-size: clamp(12px, 2.5vw, 14px);
+            font-size: 13px;
             color: #555;
         }
 
         .share-section {
-            margin-top: 15px;
-            padding-top: 15px;
+            margin-top: 12px;
+            padding-top: 12px;
             border-top: 1px solid #ddd;
         }
 
@@ -158,7 +157,7 @@
             align-items: center;
             gap: 8px;
             padding: 10px 20px;
-            font-size: clamp(12px, 2.5vw, 14px);
+            font-size: 14px;
             background: #06C755;
             color: white;
             border: none;
@@ -182,15 +181,15 @@
         /* Fullscreen button */
         .fullscreen-btn {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 10px 15px;
+            top: max(10px, env(safe-area-inset-top, 10px));
+            right: max(10px, env(safe-area-inset-right, 10px));
+            padding: 8px 12px;
             background: rgba(0, 0, 0, 0.6);
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
-            font-size: clamp(12px, 2.5vw, 14px);
+            font-size: 13px;
             z-index: 100;
             pointer-events: auto;
             -webkit-tap-highlight-color: transparent;
@@ -204,72 +203,21 @@
         }
 
         .fullscreen-btn svg {
-            width: 18px;
-            height: 18px;
+            width: 16px;
+            height: 16px;
         }
 
-        /* Landscape prompt for mobile */
-        .rotate-prompt {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            z-index: 9999;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .rotate-prompt .icon {
-            font-size: 60px;
-            margin-bottom: 20px;
-            animation: rotate-hint 2s ease-in-out infinite;
-        }
-
-        @keyframes rotate-hint {
-            0%, 100% { transform: rotate(0deg); }
-            50% { transform: rotate(90deg); }
-        }
-
-        .rotate-prompt p {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
-        .rotate-prompt .skip-btn {
-            margin-top: 20px;
-            padding: 10px 25px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid white;
-            color: white;
-            border-radius: 25px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        /* Show rotate prompt on small portrait screens */
-        @media (max-width: 600px) and (orientation: portrait) {
-            .rotate-prompt.active {
-                display: flex;
-            }
-        }
-
-        /* Mobile landscape adjustments */
-        @media (max-height: 500px) {
+        /* Small screen adjustments */
+        @media (max-height: 450px), (max-width: 400px) {
             .score-board {
-                top: 8px;
-                padding: 6px 15px;
-                font-size: 14px;
+                padding: 5px 12px;
+                font-size: 13px;
+                gap: 12px;
             }
             
             .overlay {
-                padding: 15px 25px;
+                padding: 20px;
+                width: 280px;
             }
             
             .overlay .emoji {
@@ -283,8 +231,8 @@
             }
             
             .overlay p {
-                font-size: 13px;
-                margin-bottom: 8px;
+                font-size: 14px;
+                margin-bottom: 6px;
             }
             
             .start-btn {
@@ -293,13 +241,34 @@
             }
             
             .instructions {
-                display: none;
+                font-size: 11px;
+                padding: 8px;
             }
 
             .fullscreen-btn {
-                top: 8px;
-                right: 8px;
                 padding: 6px 10px;
+                font-size: 12px;
+            }
+        }
+
+        /* Very small height (landscape phone) */
+        @media (max-height: 350px) {
+            .overlay {
+                padding: 15px;
+            }
+            
+            .overlay .emoji {
+                font-size: 28px;
+                margin-bottom: 5px;
+            }
+            
+            .overlay h1 {
+                font-size: 18px;
+                margin-bottom: 5px;
+            }
+            
+            .instructions {
+                display: none;
             }
         }
     </style>
@@ -349,48 +318,41 @@
         </div>
     </div>
 
-    <!-- Rotate prompt for mobile portrait -->
-    <div class="rotate-prompt" id="rotatePrompt">
-        <div class="icon">📱</div>
-        <p>横向きにすると<br>もっと遊びやすい！</p>
-        <button class="skip-btn" onclick="dismissRotatePrompt()">このまま遊ぶ</button>
-    </div>
-
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Game dimensions (will scale)
-        const GAME_WIDTH = 1200;
-        const GAME_HEIGHT = 600;
-        let scale = 1;
-        let offsetX = 0;
-        let offsetY = 0;
-
-        // Ground Y position
-        const GROUND_Y = 500;
 
         // Game state
         let gameRunning = false;
         let score = 0;
         let highScore = localStorage.getItem('horseGameHighScore') || 0;
-        let gameSpeed = 6;
+        let baseGameSpeed = 5;
+        let gameSpeed = baseGameSpeed;
         let animationId;
 
+        // Display dimensions
+        let displayWidth, displayHeight;
+        
+        // Game world constants (relative units)
+        const GROUND_HEIGHT_RATIO = 0.2; // Ground takes 20% of screen height
+        
         // Update high score display
         document.getElementById('high-score').textContent = highScore;
 
-        // Horse
+        // Horse (will be positioned relative to screen)
         const horse = {
-            x: 100,
-            y: 420,
-            width: 100,
-            height: 75,
+            // Size relative to screen height
+            widthRatio: 0.12,
+            heightRatio: 0.12,
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0,
             velocityY: 0,
-            gravity: 0.8,
-            jumpForce: -16,
+            gravity: 0,
+            jumpForce: 0,
             isJumping: false,
-            groundY: 420,
+            groundY: 0,
             legPhase: 0
         };
 
@@ -398,109 +360,155 @@
         let obstacles = [];
 
         // Clouds
-        let clouds = [
-            { x: 150, y: 80, size: 50 },
-            { x: 450, y: 120, size: 40 },
-            { x: 800, y: 60, size: 60 },
-            { x: 1050, y: 100, size: 45 }
-        ];
+        let clouds = [];
 
-        // Resize canvas to fit window
-        function resizeCanvas() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            
-            // Calculate scale to fit game area (fill screen)
-            const scaleX = canvas.width / GAME_WIDTH;
-            const scaleY = canvas.height / GAME_HEIGHT;
-            scale = Math.max(scaleX, scaleY); // Use max to fill screen
-            
-            // Center the game
-            offsetX = (canvas.width - GAME_WIDTH * scale) / 2;
-            offsetY = (canvas.height - GAME_HEIGHT * scale) / 2;
-
-            // Update ground position based on scale
-            horse.groundY = GROUND_Y - 80;
-            if (horse.y > horse.groundY) {
-                horse.y = horse.groundY;
+        // Initialize clouds
+        function initClouds() {
+            clouds = [];
+            for (let i = 0; i < 4; i++) {
+                clouds.push({
+                    x: (displayWidth / 4) * i + Math.random() * 100,
+                    y: displayHeight * (0.1 + Math.random() * 0.2),
+                    size: displayHeight * (0.04 + Math.random() * 0.03)
+                });
             }
+        }
+
+        // Resize and recalculate all dimensions
+        function resizeCanvas() {
+            // Get actual display size
+            displayWidth = window.innerWidth;
+            displayHeight = window.innerHeight;
+            
+            // Set canvas size
+            canvas.width = displayWidth;
+            canvas.height = displayHeight;
+            
+            // Calculate ground position
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
+            
+            // Calculate horse dimensions based on screen size
+            // Use the smaller dimension to keep horse proportional
+            const refSize = Math.min(displayWidth, displayHeight);
+            horse.width = refSize * horse.widthRatio;
+            horse.height = refSize * horse.heightRatio;
+            
+            // Position horse
+            horse.x = displayWidth * 0.1;
+            horse.groundY = groundY - horse.height;
+            
+            // Keep horse on ground if not jumping
+            if (!horse.isJumping) {
+                horse.y = horse.groundY;
+            } else {
+                // Adjust Y position proportionally
+                const jumpProgress = horse.y / horse.groundY;
+                horse.y = horse.groundY * jumpProgress;
+            }
+            
+            // Calculate physics based on screen size
+            const physicsScale = displayHeight / 600;
+            horse.gravity = 0.6 * physicsScale;
+            horse.jumpForce = -12 * physicsScale;
+            
+            // Adjust game speed based on screen width
+            baseGameSpeed = Math.max(3, displayWidth / 200);
+            if (gameRunning) {
+                gameSpeed = baseGameSpeed + (score / 1000);
+            }
+            
+            // Reinit clouds
+            initClouds();
+            
+            // Recalculate obstacle positions
+            obstacles.forEach(obs => {
+                obs.width = displayWidth * (0.06 + Math.random() * 0.03);
+                obs.height = displayHeight * (0.1 + Math.random() * 0.05);
+            });
         }
 
         // Draw horse
         function drawHorse() {
             const x = horse.x;
             const y = horse.y;
-            const s = 1.2; // Horse scale
+            const w = horse.width;
+            const h = horse.height;
             
             ctx.save();
+            
+            // Scale factor for horse parts
+            const s = h / 80;
             
             // Body
             ctx.fillStyle = '#8B4513';
             ctx.beginPath();
-            ctx.ellipse(x + 50*s, y + 30*s, 42*s, 25*s, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 40*s, y + 35*s, 35*s, 22*s, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // Head
             ctx.beginPath();
-            ctx.ellipse(x + 95*s, y + 5*s, 22*s, 15*s, -0.3, 0, Math.PI * 2);
+            ctx.ellipse(x + 75*s, y + 12*s, 18*s, 13*s, -0.3, 0, Math.PI * 2);
             ctx.fill();
             
             // Neck
             ctx.beginPath();
-            ctx.moveTo(x + 75*s, y + 12*s);
-            ctx.quadraticCurveTo(x + 87*s, y + 25*s, x + 80*s, y + 38*s);
-            ctx.lineTo(x + 68*s, y + 32*s);
-            ctx.quadraticCurveTo(x + 68*s, y + 18*s, x + 75*s, y + 12*s);
+            ctx.moveTo(x + 58*s, y + 18*s);
+            ctx.quadraticCurveTo(x + 68*s, y + 28*s, x + 62*s, y + 40*s);
+            ctx.lineTo(x + 52*s, y + 35*s);
+            ctx.quadraticCurveTo(x + 52*s, y + 22*s, x + 58*s, y + 18*s);
             ctx.fill();
             
             // Ear
             ctx.beginPath();
-            ctx.moveTo(x + 100*s, y - 8*s);
-            ctx.lineTo(x + 106*s, y - 20*s);
-            ctx.lineTo(x + 113*s, y - 5*s);
+            ctx.moveTo(x + 78*s, y + 2*s);
+            ctx.lineTo(x + 83*s, y - 10*s);
+            ctx.lineTo(x + 88*s, y + 4*s);
             ctx.fill();
             
             // Eye
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(x + 103*s, y + 3*s, 4*s, 0, Math.PI * 2);
+            ctx.arc(x + 80*s, y + 10*s, 3*s, 0, Math.PI * 2);
             ctx.fill();
             
             // Mane
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
-            ctx.moveTo(x + 68*s, y);
-            ctx.quadraticCurveTo(x + 55*s, y - 12*s, x + 62*s, y + 6*s);
-            ctx.quadraticCurveTo(x + 48*s, y - 5*s, x + 55*s, y + 12*s);
-            ctx.quadraticCurveTo(x + 42*s, y + 2*s, x + 50*s, y + 18*s);
-            ctx.lineTo(x + 68*s, y + 18*s);
+            ctx.moveTo(x + 52*s, y + 8*s);
+            ctx.quadraticCurveTo(x + 42*s, y - 2*s, x + 48*s, y + 15*s);
+            ctx.quadraticCurveTo(x + 38*s, y + 5*s, x + 44*s, y + 22*s);
+            ctx.quadraticCurveTo(x + 34*s, y + 12*s, x + 40*s, y + 28*s);
+            ctx.lineTo(x + 52*s, y + 28*s);
             ctx.fill();
             
             // Legs with animation
             ctx.fillStyle = '#8B4513';
-            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 10;
+            const legOffset = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8 * s;
+            const legWidth = 7 * s;
+            const legHeight = 28 * s;
             
             // Front legs
-            ctx.fillRect(x + 68*s, y + 45*s, 10*s, 32*s + legOffset);
-            ctx.fillRect(x + 82*s, y + 45*s, 10*s, 32*s - legOffset);
+            ctx.fillRect(x + 52*s, y + 50*s, legWidth, legHeight + legOffset);
+            ctx.fillRect(x + 62*s, y + 50*s, legWidth, legHeight - legOffset);
             
             // Back legs
-            ctx.fillRect(x + 18*s, y + 45*s, 10*s, 32*s - legOffset);
-            ctx.fillRect(x + 32*s, y + 45*s, 10*s, 32*s + legOffset);
+            ctx.fillRect(x + 15*s, y + 50*s, legWidth, legHeight - legOffset);
+            ctx.fillRect(x + 25*s, y + 50*s, legWidth, legHeight + legOffset);
             
             // Hooves
             ctx.fillStyle = '#2d1b0e';
-            ctx.fillRect(x + 66*s, y + 75*s + legOffset, 14*s, 6*s);
-            ctx.fillRect(x + 80*s, y + 75*s - legOffset, 14*s, 6*s);
-            ctx.fillRect(x + 16*s, y + 75*s - legOffset, 14*s, 6*s);
-            ctx.fillRect(x + 30*s, y + 75*s + legOffset, 14*s, 6*s);
+            const hoofHeight = 5 * s;
+            ctx.fillRect(x + 50*s, y + 50*s + legHeight + legOffset, legWidth + 4*s, hoofHeight);
+            ctx.fillRect(x + 60*s, y + 50*s + legHeight - legOffset, legWidth + 4*s, hoofHeight);
+            ctx.fillRect(x + 13*s, y + 50*s + legHeight - legOffset, legWidth + 4*s, hoofHeight);
+            ctx.fillRect(x + 23*s, y + 50*s + legHeight + legOffset, legWidth + 4*s, hoofHeight);
             
             // Tail
             ctx.fillStyle = '#4a2c0a';
             ctx.beginPath();
-            ctx.moveTo(x + 5*s, y + 25*s);
-            ctx.quadraticCurveTo(x - 20*s, y + 45*s, x - 12*s, y + 65*s);
-            ctx.quadraticCurveTo(x - 5*s, y + 58*s, x + 5*s, y + 45*s);
+            ctx.moveTo(x + 5*s, y + 30*s);
+            ctx.quadraticCurveTo(x - 15*s, y + 50*s, x - 8*s, y + 70*s);
+            ctx.quadraticCurveTo(x - 2*s, y + 60*s, x + 5*s, y + 45*s);
             ctx.fill();
             
             ctx.restore();
@@ -509,7 +517,7 @@
         // Draw Mt. Fuji obstacle
         function drawFuji(obstacle) {
             const x = obstacle.x;
-            const baseY = GROUND_Y;
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
             const height = obstacle.height;
             const width = obstacle.width;
             
@@ -518,9 +526,9 @@
             // Mountain body
             ctx.fillStyle = '#4a5568';
             ctx.beginPath();
-            ctx.moveTo(x, baseY);
-            ctx.lineTo(x + width / 2, baseY - height);
-            ctx.lineTo(x + width, baseY);
+            ctx.moveTo(x, groundY);
+            ctx.lineTo(x + width / 2, groundY - height);
+            ctx.lineTo(x + width, groundY);
             ctx.closePath();
             ctx.fill();
             
@@ -529,23 +537,21 @@
             ctx.beginPath();
             const snowHeight = height * 0.35;
             const snowWidth = width * 0.4;
-            ctx.moveTo(x + width / 2 - snowWidth / 2, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2, baseY - height);
-            ctx.lineTo(x + width / 2 + snowWidth / 2, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2 + snowWidth / 3, baseY - height + snowHeight + 6);
-            ctx.lineTo(x + width / 2 + snowWidth / 6, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2, baseY - height + snowHeight + 10);
-            ctx.lineTo(x + width / 2 - snowWidth / 6, baseY - height + snowHeight);
-            ctx.lineTo(x + width / 2 - snowWidth / 3, baseY - height + snowHeight + 6);
+            ctx.moveTo(x + width / 2 - snowWidth / 2, groundY - height + snowHeight);
+            ctx.lineTo(x + width / 2, groundY - height);
+            ctx.lineTo(x + width / 2 + snowWidth / 2, groundY - height + snowHeight);
+            ctx.lineTo(x + width / 2 + snowWidth / 3, groundY - height + snowHeight + 5);
+            ctx.lineTo(x + width / 2, groundY - height + snowHeight + 8);
+            ctx.lineTo(x + width / 2 - snowWidth / 3, groundY - height + snowHeight + 5);
             ctx.closePath();
             ctx.fill();
             
             // Shading
             ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
             ctx.beginPath();
-            ctx.moveTo(x + width / 2, baseY - height);
-            ctx.lineTo(x + width, baseY);
-            ctx.lineTo(x + width / 2, baseY);
+            ctx.moveTo(x + width / 2, groundY - height);
+            ctx.lineTo(x + width, groundY);
+            ctx.lineTo(x + width / 2, groundY);
             ctx.closePath();
             ctx.fill();
             
@@ -558,72 +564,96 @@
             clouds.forEach(cloud => {
                 ctx.beginPath();
                 ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.size * 0.8, cloud.y - cloud.size * 0.2, cloud.size * 0.7, 0, Math.PI * 2);
-                ctx.arc(cloud.x + cloud.size * 1.5, cloud.y, cloud.size * 0.8, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.size * 0.8, cloud.y - cloud.size * 0.3, cloud.size * 0.7, 0, Math.PI * 2);
+                ctx.arc(cloud.x + cloud.size * 1.4, cloud.y, cloud.size * 0.75, 0, Math.PI * 2);
                 ctx.fill();
             });
         }
 
-        // Draw ground
-        function drawGround() {
-            // Grass
-            ctx.fillStyle = '#228B22';
-            ctx.fillRect(-100, GROUND_Y, GAME_WIDTH + 200, GAME_HEIGHT - GROUND_Y + 100);
-            
-            // Ground line
-            ctx.strokeStyle = '#1a6b1a';
-            ctx.lineWidth = 4;
-            ctx.beginPath();
-            ctx.moveTo(-100, GROUND_Y);
-            ctx.lineTo(GAME_WIDTH + 100, GROUND_Y);
-            ctx.stroke();
-            
-            // Grass details
-            ctx.strokeStyle = '#2d8f2d';
-            ctx.lineWidth = 2;
-            for (let i = -100; i < GAME_WIDTH + 100; i += 40) {
-                ctx.beginPath();
-                ctx.moveTo(i, GROUND_Y);
-                ctx.lineTo(i + 6, GROUND_Y - 12);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(i + 20, GROUND_Y);
-                ctx.lineTo(i + 15, GROUND_Y - 8);
-                ctx.stroke();
-            }
-        }
-
         // Draw background Mt. Fuji
         function drawBackgroundFuji() {
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
+            
             ctx.save();
-            ctx.globalAlpha = 0.3;
+            ctx.globalAlpha = 0.25;
+            
+            const fujiWidth = displayWidth * 0.4;
+            const fujiHeight = displayHeight * 0.5;
+            const fujiX = displayWidth * 0.55;
             
             ctx.fillStyle = '#6b7280';
             ctx.beginPath();
-            ctx.moveTo(600, GROUND_Y);
-            ctx.lineTo(800, 80);
-            ctx.lineTo(1000, GROUND_Y);
+            ctx.moveTo(fujiX, groundY);
+            ctx.lineTo(fujiX + fujiWidth / 2, groundY - fujiHeight);
+            ctx.lineTo(fujiX + fujiWidth, groundY);
             ctx.closePath();
             ctx.fill();
             
             // Snow cap
             ctx.fillStyle = '#FFFFFF';
+            const snowHeight = fujiHeight * 0.25;
             ctx.beginPath();
-            ctx.moveTo(745, 170);
-            ctx.lineTo(800, 80);
-            ctx.lineTo(855, 170);
-            ctx.lineTo(830, 178);
-            ctx.lineTo(800, 165);
-            ctx.lineTo(770, 178);
+            ctx.moveTo(fujiX + fujiWidth * 0.35, groundY - fujiHeight + snowHeight);
+            ctx.lineTo(fujiX + fujiWidth / 2, groundY - fujiHeight);
+            ctx.lineTo(fujiX + fujiWidth * 0.65, groundY - fujiHeight + snowHeight);
+            ctx.lineTo(fujiX + fujiWidth * 0.58, groundY - fujiHeight + snowHeight + 8);
+            ctx.lineTo(fujiX + fujiWidth / 2, groundY - fujiHeight + snowHeight + 3);
+            ctx.lineTo(fujiX + fujiWidth * 0.42, groundY - fujiHeight + snowHeight + 8);
             ctx.closePath();
             ctx.fill();
             
             ctx.restore();
         }
 
+        // Draw ground
+        function drawGround() {
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
+            
+            // Grass
+            ctx.fillStyle = '#228B22';
+            ctx.fillRect(0, groundY, displayWidth, displayHeight - groundY);
+            
+            // Ground line
+            ctx.strokeStyle = '#1a6b1a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(displayWidth, groundY);
+            ctx.stroke();
+            
+            // Grass tufts
+            ctx.strokeStyle = '#2d8f2d';
+            ctx.lineWidth = 2;
+            const spacing = Math.max(25, displayWidth / 30);
+            for (let i = 0; i < displayWidth; i += spacing) {
+                ctx.beginPath();
+                ctx.moveTo(i, groundY);
+                ctx.lineTo(i + 4, groundY - 10);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(i + spacing/2, groundY);
+                ctx.lineTo(i + spacing/2 - 3, groundY - 7);
+                ctx.stroke();
+            }
+        }
+
+        // Draw sky
+        function drawSky() {
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
+            
+            const gradient = ctx.createLinearGradient(0, 0, 0, groundY);
+            gradient.addColorStop(0, '#87CEEB');
+            gradient.addColorStop(0.7, '#B0E0E6');
+            gradient.addColorStop(1, '#98D8C8');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, displayWidth, groundY);
+        }
+
         // Update game
         function update() {
-            // Update horse
+            const groundY = displayHeight * (1 - GROUND_HEIGHT_RATIO);
+            
+            // Update horse physics
             if (horse.isJumping || horse.y < horse.groundY) {
                 horse.velocityY += horse.gravity;
                 horse.y += horse.velocityY;
@@ -637,7 +667,7 @@
             
             // Animate legs
             if (!horse.isJumping) {
-                horse.legPhase += 0.3;
+                horse.legPhase += 0.25;
             }
             
             // Update obstacles
@@ -649,73 +679,65 @@
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
             
             // Spawn new obstacles
-            if (obstacles.length === 0 || obstacles[obstacles.length - 1].x < GAME_WIDTH - 350 - Math.random() * 250) {
-                const size = 0.8 + Math.random() * 0.5;
+            const minGap = displayWidth * 0.35;
+            const maxGap = displayWidth * 0.55;
+            const lastObs = obstacles[obstacles.length - 1];
+            
+            if (obstacles.length === 0 || (lastObs && lastObs.x < displayWidth - minGap - Math.random() * (maxGap - minGap))) {
+                const sizeVariation = 0.8 + Math.random() * 0.4;
                 obstacles.push({
-                    x: GAME_WIDTH + 50,
-                    width: 100 * size,
-                    height: 90 * size
+                    x: displayWidth + 20,
+                    width: displayWidth * 0.08 * sizeVariation,
+                    height: displayHeight * 0.12 * sizeVariation
                 });
             }
             
             // Update clouds
             clouds.forEach(cloud => {
-                cloud.x -= gameSpeed * 0.3;
+                cloud.x -= gameSpeed * 0.2;
                 if (cloud.x + cloud.size * 2 < 0) {
-                    cloud.x = GAME_WIDTH + cloud.size;
+                    cloud.x = displayWidth + cloud.size;
+                    cloud.y = displayHeight * (0.1 + Math.random() * 0.2);
                 }
             });
             
             // Check collision
-            obstacles.forEach(obs => {
-                const horseHitbox = {
-                    x: horse.x + 20,
-                    y: horse.y + 15,
-                    width: 70,
-                    height: 55
-                };
+            const horseHitbox = {
+                x: horse.x + horse.width * 0.15,
+                y: horse.y + horse.height * 0.1,
+                width: horse.width * 0.65,
+                height: horse.height * 0.75
+            };
+            
+            for (const obs of obstacles) {
+                const obsTop = groundY - obs.height;
                 
-                if (horseHitbox.x < obs.x + obs.width - 20 &&
-                    horseHitbox.x + horseHitbox.width > obs.x + 20 &&
-                    horseHitbox.y + horseHitbox.height > GROUND_Y - obs.height + 25) {
+                if (horseHitbox.x < obs.x + obs.width * 0.8 &&
+                    horseHitbox.x + horseHitbox.width > obs.x + obs.width * 0.2 &&
+                    horseHitbox.y + horseHitbox.height > obsTop + obs.height * 0.2) {
                     gameOver();
+                    return;
                 }
-            });
+            }
             
             // Update score
             score++;
             document.getElementById('current-score').textContent = Math.floor(score / 10);
             
             // Increase speed gradually
-            if (score % 500 === 0 && gameSpeed < 18) {
-                gameSpeed += 0.5;
+            gameSpeed = baseGameSpeed + (score / 1500);
+            if (gameSpeed > baseGameSpeed * 2.5) {
+                gameSpeed = baseGameSpeed * 2.5;
             }
         }
 
         // Draw everything
         function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Clear
+            ctx.clearRect(0, 0, displayWidth, displayHeight);
             
-            // Fill background
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Apply transformation for game area
-            ctx.save();
-            ctx.translate(offsetX, offsetY);
-            ctx.scale(scale, scale);
-            
-            // Draw sky gradient
-            const gradient = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT);
-            gradient.addColorStop(0, '#87CEEB');
-            gradient.addColorStop(0.7, '#B0E0E6');
-            gradient.addColorStop(0.7, '#90EE90');
-            gradient.addColorStop(1, '#228B22');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(-100, -100, GAME_WIDTH + 200, GAME_HEIGHT + 200);
-            
-            // Draw elements
+            // Draw scene
+            drawSky();
             drawBackgroundFuji();
             drawClouds();
             drawGround();
@@ -725,8 +747,6 @@
             
             // Draw horse
             drawHorse();
-            
-            ctx.restore();
         }
 
         // Game loop
@@ -741,7 +761,7 @@
 
         // Jump
         function jump() {
-            if (!horse.isJumping && horse.y >= horse.groundY) {
+            if (!horse.isJumping && horse.y >= horse.groundY - 5) {
                 horse.isJumping = true;
                 horse.velocityY = horse.jumpForce;
             }
@@ -749,13 +769,16 @@
 
         // Start game
         function startGame() {
+            resizeCanvas();
+            
             gameRunning = true;
             score = 0;
-            gameSpeed = 6;
+            gameSpeed = baseGameSpeed;
             obstacles = [];
             horse.y = horse.groundY;
             horse.velocityY = 0;
             horse.isJumping = false;
+            horse.legPhase = 0;
             
             document.getElementById('startOverlay').classList.add('hidden');
             document.getElementById('gameOverOverlay').classList.add('hidden');
@@ -790,87 +813,81 @@
             document.getElementById('lineShareBtn').href = lineShareUrl;
         }
 
-        // Fullscreen
+        // Fullscreen toggle
         function toggleFullscreen() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
+            const elem = document.documentElement;
+            
+            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement) {
+                if (elem.requestFullscreen) {
+                    elem.requestFullscreen();
+                } else if (elem.webkitRequestFullscreen) {
+                    elem.webkitRequestFullscreen();
+                } else if (elem.mozRequestFullScreen) {
+                    elem.mozRequestFullScreen();
                 }
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
                 } else if (document.webkitExitFullscreen) {
                     document.webkitExitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
                 }
             }
         }
 
-        // Update fullscreen button text
+        // Update fullscreen button
         function updateFullscreenButton() {
-            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+            const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
             document.getElementById('fullscreenText').textContent = isFullscreen ? '縮小' : '全画面';
-        }
-
-        // Rotate prompt
-        let rotatePromptDismissed = false;
-        
-        function checkOrientation() {
-            if (rotatePromptDismissed) return;
-            
-            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const prompt = document.getElementById('rotatePrompt');
-            
-            if (isMobile && isPortrait && window.innerWidth < 600) {
-                prompt.classList.add('active');
-            } else {
-                prompt.classList.remove('active');
-            }
-        }
-
-        function dismissRotatePrompt() {
-            rotatePromptDismissed = true;
-            document.getElementById('rotatePrompt').classList.remove('active');
         }
 
         // Event listeners
         window.addEventListener('resize', () => {
             resizeCanvas();
-            checkOrientation();
             if (!gameRunning) draw();
         });
 
         window.addEventListener('orientationchange', () => {
             setTimeout(() => {
                 resizeCanvas();
-                checkOrientation();
+                if (!gameRunning) draw();
+            }, 150);
+        });
+
+        document.addEventListener('fullscreenchange', () => {
+            updateFullscreenButton();
+            setTimeout(() => {
+                resizeCanvas();
+                if (!gameRunning) draw();
+            }, 100);
+        });
+        document.addEventListener('webkitfullscreenchange', () => {
+            updateFullscreenButton();
+            setTimeout(() => {
+                resizeCanvas();
                 if (!gameRunning) draw();
             }, 100);
         });
 
-        document.addEventListener('fullscreenchange', updateFullscreenButton);
-        document.addEventListener('webkitfullscreenchange', updateFullscreenButton);
-
+        // Keyboard
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
+            if (e.code === 'Space' || e.code === 'ArrowUp') {
                 e.preventDefault();
                 if (gameRunning) {
                     jump();
-                } else if (!document.getElementById('startOverlay').classList.contains('hidden') ||
-                           !document.getElementById('gameOverOverlay').classList.contains('hidden')) {
-                    startGame();
                 }
             }
         });
 
-        canvas.addEventListener('click', () => {
+        // Mouse click
+        canvas.addEventListener('click', (e) => {
             if (gameRunning) {
                 jump();
             }
         });
 
+        // Touch
         canvas.addEventListener('touchstart', (e) => {
             e.preventDefault();
             if (gameRunning) {
@@ -888,9 +905,13 @@
             lastTouchEnd = now;
         }, { passive: false });
 
+        // Prevent context menu on long press
+        document.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+        });
+
         // Initialize
         resizeCanvas();
-        checkOrientation();
         draw();
     </script>
 </body>
