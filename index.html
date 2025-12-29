@@ -251,7 +251,7 @@
             if (num === 'go') {
                 osc.frequency.setValueAtTime(880, audioCtx.currentTime);
                 osc.frequency.setValueAtTime(1100, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
                 gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.2);
                 gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.5);
                 osc.type = 'square';
@@ -264,7 +264,7 @@
                 gain2.connect(audioCtx.destination);
                 osc2.frequency.setValueAtTime(1320, audioCtx.currentTime);
                 osc2.type = 'sine';
-                gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain2.gain.setValueAtTime(0.2, audioCtx.currentTime);
                 gain2.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.4);
                 osc2.start(audioCtx.currentTime);
                 osc2.stop(audioCtx.currentTime + 0.4);
@@ -272,7 +272,7 @@
                 const freq = 440 + (4 - num) * 110;
                 osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
                 osc.type = 'sine';
-                gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.start(audioCtx.currentTime);
                 osc.stop(audioCtx.currentTime + 0.3);
