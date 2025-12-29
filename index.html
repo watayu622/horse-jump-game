@@ -465,15 +465,32 @@
         function drawHorse() {
             const x = horse.x, y = horse.y, s = horse.height / 60;
             ctx.save(); ctx.fillStyle = '#8B4513';
+            // 胴体
             ctx.beginPath(); ctx.ellipse(x + 40*s, y + 25*s, 35*s, 20*s, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.ellipse(x + 75*s, y + 5*s, 18*s, 12*s, -0.3, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(x + 60*s, y + 10*s); ctx.quadraticCurveTo(x + 70*s, y + 20*s, x + 65*s, y + 30*s); ctx.lineTo(x + 55*s, y + 25*s); ctx.quadraticCurveTo(x + 55*s, y + 15*s, x + 60*s, y + 10*s); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(x + 80*s, y - 5*s); ctx.lineTo(x + 85*s, y - 15*s); ctx.lineTo(x + 90*s, y - 3*s); ctx.fill();
-            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x + 82*s, y + 3*s, 3*s, 0, Math.PI * 2); ctx.fill();
-            ctx.fillStyle = '#4a2c0a'; ctx.beginPath(); ctx.moveTo(x + 55*s, y); ctx.quadraticCurveTo(x + 45*s, y - 10*s, x + 50*s, y + 5*s); ctx.quadraticCurveTo(x + 40*s, y - 5*s, x + 45*s, y + 10*s); ctx.quadraticCurveTo(x + 35*s, y, x + 40*s, y + 15*s); ctx.lineTo(x + 55*s, y + 15*s); ctx.fill();
+            // 顔（横長に調整）
+            ctx.beginPath(); ctx.ellipse(x + 80*s, y + 8*s, 22*s, 10*s, -0.2, 0, Math.PI * 2); ctx.fill();
+            // 首
+            ctx.beginPath(); ctx.moveTo(x + 55*s, y + 10*s); ctx.quadraticCurveTo(x + 70*s, y + 20*s, x + 65*s, y + 30*s); ctx.lineTo(x + 55*s, y + 25*s); ctx.quadraticCurveTo(x + 55*s, y + 15*s, x + 55*s, y + 10*s); ctx.fill();
+            // 耳
+            ctx.beginPath(); ctx.moveTo(x + 75*s, y - 2*s); ctx.lineTo(x + 78*s, y - 12*s); ctx.lineTo(x + 83*s, y - 1*s); ctx.fill();
+            // 目
+            ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(x + 88*s, y + 5*s, 3*s, 0, Math.PI * 2); ctx.fill();
+            // たてがみ（首の上部に配置）
+            ctx.fillStyle = '#4a2c0a'; 
+            ctx.beginPath(); 
+            ctx.moveTo(x + 75*s, y - 2*s); 
+            ctx.quadraticCurveTo(x + 65*s, y - 8*s, x + 60*s, y + 5*s); 
+            ctx.quadraticCurveTo(x + 55*s, y - 5*s, x + 50*s, y + 10*s); 
+            ctx.quadraticCurveTo(x + 45*s, y + 5*s, x + 45*s, y + 18*s); 
+            ctx.lineTo(x + 55*s, y + 15*s); 
+            ctx.quadraticCurveTo(x + 60*s, y + 5*s, x + 75*s, y - 2*s);
+            ctx.fill();
+            // 足
             ctx.fillStyle = '#8B4513'; const lo = horse.isJumping ? 0 : Math.sin(horse.legPhase) * 8 * s;
             ctx.fillRect(x + 55*s, y + 35*s, 8*s, 25*s + lo); ctx.fillRect(x + 65*s, y + 35*s, 8*s, 25*s - lo); ctx.fillRect(x + 15*s, y + 35*s, 8*s, 25*s - lo); ctx.fillRect(x + 25*s, y + 35*s, 8*s, 25*s + lo);
+            // 蹄
             ctx.fillStyle = '#2d1b0e'; ctx.fillRect(x + 54*s, y + 58*s + lo, 10*s, 5*s); ctx.fillRect(x + 64*s, y + 58*s - lo, 10*s, 5*s); ctx.fillRect(x + 14*s, y + 58*s - lo, 10*s, 5*s); ctx.fillRect(x + 24*s, y + 58*s + lo, 10*s, 5*s);
+            // 尻尾
             ctx.fillStyle = '#4a2c0a'; ctx.beginPath(); ctx.moveTo(x + 5*s, y + 20*s); ctx.quadraticCurveTo(x - 15*s, y + 35*s, x - 10*s, y + 50*s); ctx.quadraticCurveTo(x - 5*s, y + 45*s, x + 5*s, y + 35*s); ctx.fill();
             ctx.restore();
         }
@@ -493,13 +510,13 @@
             const x = obs.x, y = obs.y, sz = obs.width, wp = Math.sin(frameCount * 0.12) * 0.4;
             ctx.save(); ctx.translate(x + sz/2, y);
             ctx.fillStyle = '#5D4037'; ctx.beginPath(); ctx.ellipse(0, 0, sz * 0.45, sz * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-            ctx.beginPath(); ctx.arc(sz * 0.4, -sz * 0.05, sz * 0.14, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(sz * 0.4, -sz * 0.05, sz * 0.14, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#FFD700'; ctx.beginPath(); ctx.moveTo(sz * 0.54, -sz * 0.05); ctx.lineTo(sz * 0.68, 0); ctx.lineTo(sz * 0.54, sz * 0.03); ctx.closePath(); ctx.fill();
             ctx.fillStyle = '#FFF'; ctx.beginPath(); ctx.arc(sz * 0.44, -sz * 0.08, sz * 0.05, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(sz * 0.45, -sz * 0.08, sz * 0.025, 0, Math.PI * 2); ctx.fill();
             ctx.fillStyle = '#6D4C41';
-            ctx.beginPath(); ctx.moveTo(-sz * 0.15, -sz * 0.05); ctx.quadraticCurveTo(-sz * 0.5, -sz * (0.5 + wp), -sz * 0.6, -sz * 0.15); ctx.quadraticCurveTo(-sz * 0.35, sz * 0.05, -sz * 0.15, -sz * 0.05); ctx.fill();
-            ctx.beginPath(); ctx.moveTo(-sz * 0.15, sz * 0.05); ctx.quadraticCurveTo(-sz * 0.5, sz * (0.5 + wp), -sz * 0.6, sz * 0.15); ctx.quadraticCurveTo(-sz * 0.35, -sz * 0.05, -sz * 0.15, sz * 0.05); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(sz * 0.2, -sz * 0.05); ctx.quadraticCurveTo(-sz * 0.2, -sz * (0.7 + wp), -sz * 0.5, -sz * 0.2); ctx.quadraticCurveTo(-sz * 0.1, sz * 0.05, sz * 0.2, -sz * 0.05); ctx.fill();
+            ctx.beginPath(); ctx.moveTo(sz * 0.2, sz * 0.05); ctx.quadraticCurveTo(-sz * 0.2, sz * (0.7 + wp), -sz * 0.5, sz * 0.2); ctx.quadraticCurveTo(-sz * 0.1, -sz * 0.05, sz * 0.2, sz * 0.05); ctx.fill();
             ctx.fillStyle = '#4E342E'; ctx.beginPath(); ctx.moveTo(-sz * 0.4, 0); ctx.lineTo(-sz * 0.7, -sz * 0.12); ctx.lineTo(-sz * 0.65, 0); ctx.lineTo(-sz * 0.7, sz * 0.12); ctx.closePath(); ctx.fill();
             ctx.restore();
         }
