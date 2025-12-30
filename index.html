@@ -72,7 +72,32 @@
             .overlay h1 { font-size: 14px; } 
             .overlay .result-preview { max-width: 100px; } 
         }
+        /* ランキング関連スタイル */
+        .ranking-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; font-size: 13px; background: #f59e0b; color: white; border: none; border-radius: 18px; cursor: pointer; }
+        .ranking-section { margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 10px; }
+        .ranking-section h3 { font-size: 14px; color: #333; margin-bottom: 8px; }
+        .ranking-list { list-style: none; padding: 0; margin: 0; font-size: 12px; }
+        .ranking-list li { padding: 4px 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; }
+        .ranking-list li:last-child { border-bottom: none; }
+        .ranking-list .rank { font-weight: bold; color: #667eea; width: 24px; }
+        .ranking-list .name { flex: 1; }
+        .ranking-list .score { font-weight: bold; color: #c41e3a; }
+        .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 400; }
+        .modal.hidden { display: none; }
+        .modal-content { background: white; padding: 20px; border-radius: 15px; max-width: 90%; width: 320px; text-align: center; }
+        .modal-content h2 { font-size: 18px; margin-bottom: 15px; color: #333; }
+        .modal-content p { font-size: 12px; color: #666; margin-bottom: 15px; text-align: left; }
+        .modal-content input { width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; margin-bottom: 10px; }
+        .modal-content label { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; color: #666; text-align: left; margin-bottom: 15px; cursor: pointer; }
+        .modal-content label input[type="checkbox"] { margin-top: 2px; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; }
+        .modal-buttons button { padding: 8px 20px; border: none; border-radius: 20px; cursor: pointer; font-size: 13px; }
+        .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .btn-secondary { background: #ddd; color: #333; }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
     </style>
+    <!-- Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
@@ -124,10 +149,43 @@
                     結果を保存
                 </button>
                 <p style="font-size: 10px; color: #999; margin: 4px 0 8px 0;">※スマホの場合は画像長押しで保存</p>
+                <button class="ranking-btn" onclick="showRankingModal()">🏆 ランキングに参加</button>
+            </div>
+            <div class="ranking-section" id="rankingSection">
+                <h3>🏆 ランキング TOP10</h3>
+                <ul class="ranking-list" id="rankingList">
+                    <li><span class="rank">-</span><span class="name">読み込み中...</span><span class="score"></span></li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- ランキング参加モーダル -->
+        <div class="modal hidden" id="rankingModal">
+            <div class="modal-content">
+                <h2>🏆 ランキングに参加</h2>
+                <p>あなたのスコア: <strong id="modalScore">0</strong>点</p>
+                <input type="text" id="nicknameInput" placeholder="ニックネームを入力" maxlength="20">
+                <label>
+                    <input type="checkbox" id="agreeCheckbox">
+                    <span>ニックネームとスコアがランキングに公開されることに同意します。不適切な名前は削除される場合があります。</span>
+                </label>
+                <div class="modal-buttons">
+                    <button class="btn-secondary" onclick="closeRankingModal()">キャンセル</button>
+                    <button class="btn-primary" id="submitRankingBtn" onclick="submitToRanking()" disabled>登録する</button>
+                </div>
             </div>
         </div>
     </div>
     <script>
+        // ==========================================
+        // Supabase 設定（ここを自分のプロジェクトの値に変更）
+        // ==========================================
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';  // 例: https://xxxxx.supabase.co
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        
+        // Supabase クライアント初期化
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const resultCanvas = document.getElementById('resultCanvas');
@@ -589,7 +647,110 @@
             resultImageUrl = generateResultImage();
             document.getElementById('resultPreview').src = resultImageUrl;
             
-            document.getElementById('gameOverOverlay').classList.remove('hidden'); 
+            document.getElementById('gameOverOverlay').classList.remove('hidden');
+            
+            // ランキング取得
+            fetchRanking();
+        }
+        
+        // ==========================================
+        // ランキング関連の関数（Supabase版）
+        // ==========================================
+        
+        async function fetchRanking() {
+            try {
+                // SQL: SELECT nickname, score, created_at FROM rankings ORDER BY score DESC LIMIT 10
+                const { data, error } = await supabase
+                    .from('rankings')
+                    .select('nickname, score, created_at')
+                    .order('score', { ascending: false })
+                    .limit(10);
+                
+                if (error) throw error;
+                displayRanking(data);
+            } catch (e) {
+                console.log('ランキング取得エラー:', e);
+                document.getElementById('rankingList').innerHTML = '<li><span class="name">ランキングを取得できませんでした</span></li>';
+            }
+        }
+        
+        function displayRanking(rankings) {
+            const list = document.getElementById('rankingList');
+            if (!rankings || rankings.length === 0) {
+                list.innerHTML = '<li><span class="name">まだ登録がありません</span></li>';
+                return;
+            }
+            list.innerHTML = rankings.map((r, i) => 
+                `<li><span class="rank">${i + 1}</span><span class="name">${escapeHtml(r.nickname)}</span><span class="score">${r.score}点</span></li>`
+            ).join('');
+        }
+        
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+        
+        function showRankingModal() {
+            document.getElementById('modalScore').textContent = score;
+            document.getElementById('nicknameInput').value = '';
+            document.getElementById('agreeCheckbox').checked = false;
+            document.getElementById('submitRankingBtn').disabled = true;
+            document.getElementById('rankingModal').classList.remove('hidden');
+        }
+        
+        function closeRankingModal() {
+            document.getElementById('rankingModal').classList.add('hidden');
+        }
+        
+        // チェックボックスとニックネーム入力の監視
+        document.addEventListener('DOMContentLoaded', () => {
+            const checkbox = document.getElementById('agreeCheckbox');
+            const nickname = document.getElementById('nicknameInput');
+            const submitBtn = document.getElementById('submitRankingBtn');
+            
+            function updateSubmitButton() {
+                submitBtn.disabled = !(checkbox.checked && nickname.value.trim().length > 0);
+            }
+            
+            checkbox.addEventListener('change', updateSubmitButton);
+            nickname.addEventListener('input', updateSubmitButton);
+        });
+        
+        async function submitToRanking() {
+            const nickname = document.getElementById('nicknameInput').value.trim();
+            const agreed = document.getElementById('agreeCheckbox').checked;
+            
+            if (!nickname || !agreed) return;
+            
+            // バリデーション
+            if (nickname.length > 20) {
+                alert('ニックネームは20文字以内で入力してください');
+                return;
+            }
+            
+            // 簡易的な不適切ワードフィルター
+            const ngWords = ['死ね', 'バカ', 'アホ', '殺す'];
+            if (ngWords.some(word => nickname.includes(word))) {
+                alert('不適切なニックネームです');
+                return;
+            }
+            
+            try {
+                // SQL: INSERT INTO rankings (nickname, score) VALUES (?, ?)
+                const { data, error } = await supabase
+                    .from('rankings')
+                    .insert([{ nickname: nickname, score: score }]);
+                
+                if (error) throw error;
+                
+                closeRankingModal();
+                fetchRanking();
+                alert('ランキングに登録しました！');
+            } catch (e) {
+                console.log('登録エラー:', e);
+                alert('登録に失敗しました: ' + e.message);
+            }
         }
         
         function toggleFullscreen() { const el = document.documentElement; if (!document.fullscreenElement) { if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); } else { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); } }
