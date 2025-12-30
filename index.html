@@ -180,11 +180,20 @@
         // ==========================================
         // Supabase 設定（ここを自分のプロジェクトの値に変更）
         // ==========================================
-        const SUPABASE_URL = 'https://ywcrnmfpxtefvrvellwe.supabase.co';  // 例: https://xxxxx.supabase.co
-        const SUPABASE_ANON_KEY = 'sb_publishable_lVCbPIy96mctROtqCtkDpQ_BgFfEPgg';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';  // 例: https://xxxxx.supabase.co
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         
-        // Supabase クライアント初期化
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Supabase クライアント初期化（エラーハンドリング付き）
+        let supabaseClient = null;
+        let supabaseEnabled = false;
+        try {
+            if (SUPABASE_URL !== 'YOUR_SUPABASE_URL' && SUPABASE_ANON_KEY !== 'YOUR_SUPABASE_ANON_KEY') {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                supabaseEnabled = true;
+            }
+        } catch (e) {
+            console.log('Supabase初期化エラー:', e);
+        }
         
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
@@ -659,8 +668,12 @@
         
         async function fetchRanking() {
             try {
+                if (!supabaseEnabled) {
+                    document.getElementById('rankingList').innerHTML = '<li><span class="name">ランキング未設定</span></li>';
+                    return;
+                }
                 // SQL: SELECT nickname, score, created_at FROM rankings ORDER BY score DESC LIMIT 10
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('rankings')
                     .select('nickname, score, created_at')
                     .order('score', { ascending: false })
@@ -718,6 +731,11 @@
         });
         
         async function submitToRanking() {
+            if (!supabaseEnabled) {
+                alert('ランキング機能が設定されていません');
+                return;
+            }
+            
             const nickname = document.getElementById('nicknameInput').value.trim();
             const agreed = document.getElementById('agreeCheckbox').checked;
             
@@ -738,7 +756,7 @@
             
             try {
                 // SQL: INSERT INTO rankings (nickname, score) VALUES (?, ?)
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('rankings')
                     .insert([{ nickname: nickname, score: score }]);
                 
