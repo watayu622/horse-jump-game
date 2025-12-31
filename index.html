@@ -47,6 +47,38 @@
         .countdown.hidden { display: none; }
         .countdown.go { font-size: 80px; color: #667eea; }
         @keyframes countPop { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; } 50% { transform: translate(-50%, -50%) scale(1.2); } 100% { transform: translate(-50%, -50%) scale(1); opacity: 1; } }
+        /* 除夜の鐘アニメーション */
+        .bell-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,20,0.75); z-index: 350; display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+        .bell-overlay.visible { opacity: 1; }
+        .bell-scene { position: relative; width: 200px; height: 150px; transform: scale(0.7); }
+        /* 鐘楼の枠 */
+        .bell-frame { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 160px; height: 130px; }
+        .frame-top { position: absolute; top: 0; left: -15px; width: 190px; height: 12px; background: linear-gradient(180deg, #5D4037, #4E342E); border-radius: 3px; }
+        .frame-pillar { position: absolute; top: 12px; width: 10px; height: 120px; background: linear-gradient(90deg, #5D4037, #6D4C41, #5D4037); }
+        .frame-pillar.left { left: 0; }
+        .frame-pillar.right { right: 0; }
+        /* 鐘 */
+        .temple-bell { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); }
+        .temple-bell.hit { animation: bellShake 0.3s ease-out; }
+        .bell-top { width: 24px; height: 12px; background: linear-gradient(180deg, #8B7355, #6B5344); border-radius: 12px 12px 0 0; margin: 0 auto; }
+        .bell-body { width: 70px; height: 85px; background: linear-gradient(180deg, #4A4A2A 0%, #3D3D1F 30%, #2E2E17 70%, #1F1F0F 100%); border-radius: 6px 6px 35px 35px; margin: 0 auto; position: relative; box-shadow: inset -6px 0 12px rgba(0,0,0,0.4), inset 6px 0 12px rgba(255,255,255,0.1); }
+        .bell-ring { position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%); width: 78px; height: 12px; background: linear-gradient(180deg, #3D3D1F, #2A2A15); border-radius: 0 0 40px 40px; }
+        /* 撞木 */
+        .shumoku-container { position: absolute; bottom: 15px; right: -20px; transform-origin: top center; }
+        .shumoku-container.swing { animation: shumokuSwing 0.4s ease-in-out; }
+        .shumoku { position: relative; }
+        .shumoku-rope { position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 3px; height: 40px; background: #8B4513; }
+        .shumoku-log { width: 70px; height: 20px; background: linear-gradient(180deg, #8B4513, #A0522D, #6B3510); border-radius: 10px; }
+        .shumoku-log::before { content: ''; position: absolute; left: -5px; top: 50%; transform: translateY(-50%); width: 14px; height: 20px; background: radial-gradient(ellipse, #A0522D, #6B3510); border-radius: 50%; }
+        /* テキストと波紋 */
+        .bell-text { font-size: 50px; color: #ffd700; font-weight: bold; text-shadow: 0 0 20px rgba(255,215,0,0.8); margin-top: 15px; opacity: 0; }
+        .bell-text.show { animation: bellTextAppear 0.3s ease-out forwards; }
+        .bell-wave { position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%); width: 60px; height: 60px; border: 2px solid rgba(255,215,0,0.5); border-radius: 50%; opacity: 0; }
+        .bell-wave.expand { animation: waveExpand 0.6s ease-out forwards; }
+        @keyframes shumokuSwing { 0% { transform: translateX(40px); } 40% { transform: translateX(-15px); } 100% { transform: translateX(20px); } }
+        @keyframes bellShake { 0%, 100% { transform: translateX(-50%) rotate(0deg); } 25% { transform: translateX(-50%) rotate(-1.5deg); } 75% { transform: translateX(-50%) rotate(1deg); } }
+        @keyframes bellTextAppear { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes waveExpand { 0% { width: 60px; height: 60px; opacity: 0.6; } 100% { width: 250px; height: 250px; opacity: 0; } }
         @media (hover: hover) and (pointer: fine) { .fullscreen-btn { display: flex; align-items: center; gap: 4px; } }
         @media (max-height: 450px) { 
             .overlay { padding: 10px 15px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px; } 
@@ -139,6 +171,32 @@
         
         <div class="countdown hidden" id="countdown">3</div>
         
+        <!-- 除夜の鐘オーバーレイ -->
+        <div class="bell-overlay" id="bellOverlay">
+            <div class="bell-scene">
+                <div class="bell-frame">
+                    <div class="frame-top"></div>
+                    <div class="frame-pillar left"></div>
+                    <div class="frame-pillar right"></div>
+                </div>
+                <div class="temple-bell" id="templeBell">
+                    <div class="bell-top"></div>
+                    <div class="bell-body"></div>
+                    <div class="bell-ring"></div>
+                </div>
+                <div class="shumoku-container" id="shumokuContainer">
+                    <div class="shumoku">
+                        <div class="shumoku-rope"></div>
+                        <div class="shumoku-log"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bell-text" id="bellText">GO!</div>
+            <div class="bell-wave" id="bellWave1"></div>
+            <div class="bell-wave" id="bellWave2"></div>
+            <div class="bell-wave" id="bellWave3"></div>
+        </div>
+        
         <button class="help-btn" id="helpBtn" onclick="toggleHelp()">❓ 操作方法</button>
         <div class="help-panel hidden" id="helpPanel">
             <h3>操作方法</h3>
@@ -225,8 +283,8 @@
         // ==========================================
         // Supabase 設定（ここを自分のプロジェクトの値に変更）
         // ==========================================
-        const SUPABASE_URL = 'https://ywcrnmfpxtefvrvellwe.supabase.co';  // 例: https://xxxxx.supabase.co
-        const SUPABASE_ANON_KEY = 'sb_publishable_lVCbPIy96mctROtqCtkDpQ_BgFfEPgg';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';  // 例: https://xxxxx.supabase.co
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         
         // Supabase クライアント初期化（エラーハンドリング付き）
         let supabaseClient = null;
@@ -562,17 +620,52 @@
                     countdownEl.style.animation = 'countPop 0.5s ease-out';
                     playCountdownSound(count);
                 } else if (count === 0) {
-                    countdownEl.textContent = 'GO!';
-                    countdownEl.classList.add('go');
-                    countdownEl.style.animation = 'none';
-                    countdownEl.offsetHeight;
-                    countdownEl.style.animation = 'countPop 0.5s ease-out';
+                    countdownEl.classList.add('hidden');
+                    showBellAnimation();
                     playCountdownSound('go');
                 } else {
                     clearInterval(countInterval);
                     countdownEl.classList.add('hidden');
                     startGame();
                 }
+            }, 800);
+        }
+        
+        function showBellAnimation() {
+            const bellOverlay = document.getElementById('bellOverlay');
+            const templeBell = document.getElementById('templeBell');
+            const shumokuContainer = document.getElementById('shumokuContainer');
+            const bellText = document.getElementById('bellText');
+            
+            // クラスをリセット
+            templeBell.classList.remove('hit');
+            shumokuContainer.classList.remove('swing');
+            bellText.classList.remove('show');
+            ['bellWave1', 'bellWave2', 'bellWave3'].forEach(id => {
+                document.getElementById(id).classList.remove('expand');
+            });
+            
+            bellOverlay.classList.add('visible');
+            
+            // 撞木を振る
+            shumokuContainer.classList.add('swing');
+            
+            // 鐘に当たる
+            setTimeout(() => {
+                templeBell.classList.add('hit');
+                bellText.classList.add('show');
+                
+                // 波紋を順番に
+                ['bellWave1', 'bellWave2', 'bellWave3'].forEach((id, i) => {
+                    setTimeout(() => {
+                        document.getElementById(id).classList.add('expand');
+                    }, i * 100);
+                });
+            }, 180);
+            
+            // 0.8秒後に非表示
+            setTimeout(() => {
+                bellOverlay.classList.remove('visible');
             }, 800);
         }
         
