@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>初夢ジャンプ 🐴🗻🦅🍆</title>
-    <meta property="og:title" content="🎍謹賀新年🎍 初夢ジャンプ">
+    <title>初夢ジャンプゲーム 🐴🗻🦅🍆</title>
+    <meta property="og:title" content="🎍謹賀新年🎍 初夢ジャンプゲーム">
     <meta property="og:description" content="一富士二鷹三茄子を飛び越えろ！タップでジャンプ！">
-    <meta property="og:image" content="ogp.png">
+    <meta property="og:image" content="ogp_v2.png">
     <meta property="og:type" content="website">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
@@ -124,7 +124,7 @@
         <div class="overlay" id="startOverlay">
             <div class="emoji">🎍🐴🎍</div>
             <div class="newyear">謹賀新年</div>
-            <h1>初夢ジャンプ</h1>
+            <h1>初夢ジャンプゲーム</h1>
             <p>一富士二鷹三茄子を飛び越えろ！</p>
             <button class="start-btn" onclick="startCountdown()">スタート</button>
             <button class="music-btn" id="musicBtn" onclick="toggleMusic()">🔇 音楽OFF</button>
@@ -181,8 +181,8 @@
         // ==========================================
         // Supabase 設定（ここを自分のプロジェクトの値に変更）
         // ==========================================
-        const SUPABASE_URL = 'https://ywcrnmfpxtefvrvellwe.supabase.co';  // 例: https://xxxxx.supabase.co
-        const SUPABASE_ANON_KEY = 'sb_publishable_lVCbPIy96mctROtqCtkDpQ_BgFfEPgg';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        const SUPABASE_URL = 'YOUR_SUPABASE_URL';  // 例: https://xxxxx.supabase.co
+        const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // 例: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         
         // Supabase クライアント初期化（エラーハンドリング付き）
         let supabaseClient = null;
@@ -471,14 +471,14 @@
             
             resultCtx.font = '16px sans-serif';
             resultCtx.fillStyle = '#667eea';
-            resultCtx.fillText('初夢ジャンプ - 令和八年 午年', w / 2, 280);
+            resultCtx.fillText('初夢ジャンプゲーム - 令和八年 午年', w / 2, 280);
             
             return resultCanvas.toDataURL('image/png');
         }
         
         function shareToLine() {
             const gameUrl = window.location.href;
-            const text = '🐴初夢ジャンプ\n今年もウマくいきますように\nスコア: ' + score + '点！\n🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount + '\n\n▶ 遊んでみる:';
+            const text = '🐴初夢ジャンプゲーム\n今年もウマくいきますように\nスコア: ' + score + '点！\n🍆' + eggplantCount + ' 🗻' + fujiCount + ' 🦅' + hawkCount + '\n\n▶ 遊んでみる:';
             
             const lineUrl = 'https://social-plugins.line.me/lineit/share?url=' + encodeURIComponent(gameUrl) + '&text=' + encodeURIComponent(text);
             window.open(lineUrl, '_blank');
@@ -495,7 +495,7 @@
                 try {
                     await navigator.share({
                         files: [file],
-                        title: '初夢ジャンプ結果',
+                        title: '初夢ジャンプゲーム結果',
                         text: '今年もウマくいきますように！ スコア: ' + score + '点'
                     });
                 } catch (e) {
@@ -525,8 +525,14 @@
             horse.x = W * 0.15;
             horse.groundY = groundY - horse.height - 5;
             if (!horse.isJumping) horse.y = horse.groundY;
-            horse.gravity = H * 0.0012; horse.jumpForce = -H * 0.020;
-            baseSpeed = Math.max(2, W * 0.003);
+            // ジャンプ高さを地面より上の空間の22%に設定
+            const jumpHeight = groundY * 0.22;
+            // 滞空時間を画面サイズに応じて調整（refSize=400で32フレーム基準）
+            const hangTime = 32 * (refSize / 400);
+            horse.gravity = (2 * jumpHeight) / (hangTime * hangTime / 4);
+            horse.jumpForce = -horse.gravity * hangTime / 2;
+            // 速度を画面幅に応じて調整
+            baseSpeed = W * 0.003125;
             clouds = [];
             for (let i = 0; i < 5; i++) clouds.push({ x: W * (i / 5) + Math.random() * (W * 0.15), y: H * (0.08 + Math.random() * 0.15), size: refSize * (0.03 + Math.random() * 0.02) });
         }
