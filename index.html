@@ -525,14 +525,14 @@
             horse.x = W * 0.15;
             horse.groundY = groundY - horse.height - 5;
             if (!horse.isJumping) horse.y = horse.groundY;
-            // ジャンプ高さを地面より上の空間の22%に設定
-            const jumpHeight = groundY * 0.22;
-            // 滞空時間を画面サイズに応じて調整（refSize=400で32フレーム基準）
-            const hangTime = 32 * (refSize / 400);
+            // ジャンプ高さを地面より上の空間の28%に設定
+            const jumpHeight = groundY * 0.28;
+            // 滞空時間を画面サイズに応じて調整（refSize=400で40フレーム基準）
+            const hangTime = 40 * (refSize / 400);
             horse.gravity = (2 * jumpHeight) / (hangTime * hangTime / 4);
             horse.jumpForce = -horse.gravity * hangTime / 2;
-            // 速度を画面幅に応じて調整
-            baseSpeed = W * 0.003125;
+            // 速度はスマホ横向き基準で固定
+            baseSpeed = 2.5;
             clouds = [];
             for (let i = 0; i < 5; i++) clouds.push({ x: W * (i / 5) + Math.random() * (W * 0.15), y: H * (0.08 + Math.random() * 0.15), size: refSize * (0.03 + Math.random() * 0.02) });
         }
@@ -625,7 +625,7 @@
             const horseRightEdge = horse.x + horse.width;
             obstacles.forEach(obs => { obs.x -= gameSpeed; if (!obs.passed && obs.x + obs.width < horseRightEdge) { obs.passed = true; score += obs.score; if (obs.type === 'fuji') fujiCount++; else if (obs.type === 'hawk') hawkCount++; else eggplantCount++; } });
             obstacles = obstacles.filter(obs => obs.x + obs.width > -50);
-            const minGap = Math.max(W * 0.28, W * 0.45 - gameSpeed * W * 0.02), maxGap = Math.max(W * 0.45, W * 0.7 - gameSpeed * W * 0.025);
+            const minGap = Math.max(300, W * 0.35), maxGap = Math.max(450, W * 0.55);
             const last = obstacles[obstacles.length - 1]; if (!last || last.x < W - minGap - Math.random() * (maxGap - minGap)) obstacles.push(createObstacle());
             clouds.forEach(c => { c.x -= gameSpeed * 0.15; if (c.x + c.size * 2 < 0) c.x = W + c.size; });
             const hb = { x: horse.x + horse.width * 0.2, y: horse.y + horse.height * 0.15, w: horse.width * 0.6, h: horse.height * 0.65 };
